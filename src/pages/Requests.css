@@ -1,0 +1,279 @@
+/* Reusing Premium Styles for HR Portal */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: #333;
+    background-color: #f5f7fa;
+}
+
+.page-container {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    /* Gradient Text */
+    background: linear-gradient(135deg, #EF4136, #FF8E53);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.filter-select {
+    padding: 10px 24px;
+    border: 1px solid #e1e4e8;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+    outline: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background-color: white;
+}
+
+.filter-select:hover {
+    border-color: #EF4136;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(239, 65, 54, 0.1);
+}
+
+.requests-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+}
+
+/* Card Styling */
+.request-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.request-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(239, 65, 54, 0.08);
+    border-color: rgba(239, 65, 54, 0.2);
+}
+
+/* Accent Strip */
+.request-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #ccc;
+    border-radius: 4px 0 0 4px;
+}
+
+.request-card.type-advance::before {
+    background: #2196F3;
+}
+
+.request-card.type-leave::before {
+    background: #FF9800;
+}
+
+.request-card.type-permission::before {
+    background: #9C27B0;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Badges */
+.request-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.badge-advance {
+    background: rgba(33, 150, 243, 0.1);
+    color: #2196F3;
+}
+
+.badge-leave {
+    background: rgba(255, 152, 0, 0.1);
+    color: #FF9800;
+}
+
+.badge-permission {
+    background: rgba(156, 39, 176, 0.1);
+    color: #9C27B0;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-approved {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-rejected {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Employee Info */
+.employee-info h3 {
+    margin: 0 0 6px 0;
+    font-size: 19px;
+    font-weight: 700;
+    color: #2d3436;
+}
+
+.employee-meta {
+    font-size: 13px;
+    color: #636e72;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+/* Details Box */
+.detail-box {
+    background: #fdfdfd;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 20px 0;
+    border: 1px dashed #e1e4e8;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.detail-row:last-child {
+    margin-bottom: 0;
+}
+
+.label {
+    color: #888;
+    font-weight: 500;
+}
+
+.value {
+    color: #2d3436;
+    font-weight: 600;
+}
+
+/* Footer */
+.card-footer {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+}
+
+/* Actions */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn-action {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-approve {
+    background-color: #10B981;
+    /* Emerald 500 */
+    color: white;
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+}
+
+.btn-approve:hover {
+    background-color: #059669;
+    /* Emerald 600 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-reject {
+    background-color: #F43F5E;
+    /* Rose 500 */
+    color: white;
+    box-shadow: 0 4px 6px rgba(244, 63, 94, 0.2);
+}
+
+.btn-reject:hover {
+    background-color: #E11D48;
+    /* Rose 600 */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(244, 63, 94, 0.3);
+}
+
+.rejection-note {
+    margin-top: 16px;
+    color: #c62828;
+    font-size: 13px;
+    font-style: italic;
+    background: #ffebee;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: #888;
+    background: #f9f9f9;
+    border-radius: 16px;
+    margin-top: 20px;
+    font-size: 16px;
+    border: 2px dashed #e1e4e8;
+}
