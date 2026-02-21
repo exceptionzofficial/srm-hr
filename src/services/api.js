@@ -248,4 +248,31 @@ export const login = async (email, password) => {
     return response.data;
 };
 
+// --- Location & Travel Tracking ---
+export const getAllEmployeeLocations = async (branchId = null) => {
+    const url = branchId ? `/api/location/employees?branchId=${branchId}` : '/api/location/employees';
+    const response = await api.get(url);
+    return response.data;
+};
+
+export const getWorkSummary = async (employeeId, date) => {
+    const response = await api.get(`/api/location/work-summary/${employeeId}?date=${date}`);
+    return response.data;
+};
+
+export const startTravel = async (employeeId, requestId, location) => {
+    const response = await api.post('/api/travel/start', { employeeId, requestId, ...location });
+    return response.data;
+};
+
+export const endTravel = async (employeeId, sessionId, location, totalDistance = 0) => {
+    const response = await api.post('/api/travel/end', { employeeId, sessionId, ...location, totalDistance });
+    return response.data;
+};
+
+export const getActiveTravel = async (employeeId) => {
+    const response = await api.get(`/api/travel/active/${employeeId}`);
+    return response.data;
+};
+
 export default api;

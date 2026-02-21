@@ -19,8 +19,9 @@ const Login = () => {
             const response = await login(email, password);
             if (response.success && response.employee) {
                 // Verify Role
-                if (response.employee.role !== 'HR_ADMIN') {
-                    throw new Error('Access Denied: This portal is for HR Admins only.');
+                const allowedRoles = ['HR_ADMIN', 'BRANCH_MANAGER', 'CLUSTER_MANAGER', 'RETAIL_MANAGER', 'FINANCE_ADMIN', 'LEGAL_ADMIN', 'PRODUCTION_ADMIN', 'QUALITY_ADMIN', 'SUPER_ADMIN'];
+                if (!allowedRoles.includes(response.employee.role)) {
+                    throw new Error('Access Denied: This portal is for Managers & HR only.');
                 }
                 localStorage.setItem('user', JSON.stringify(response.employee));
                 navigate('/');

@@ -45,18 +45,36 @@ const Requests = () => {
         }
     };
 
-    const handleAction = async (requestId, status) => {
+    const handleAction = async (requestId, currentStatus, actionType) => {
+        let status = actionType; // Default to the action (APPROVED/REJECTED)
         let rejectionReason = null;
-        if (status === 'REJECTED') {
+
+        if (actionType === 'REJECTED') {
             rejectionReason = prompt('Enter rejection reason (optional):');
-            if (rejectionReason === null) return; // Cancelled
+            if (rejectionReason === null) return;
+        } else if (actionType === 'APPROVED') {
+            // Determine next status based on current status and role
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const role = user.role;
+
+            // Managers recommending approval moves to PENDING_HR
+            // HR/Admin finalizes approval
+            const managerRoles = ['BRANCH_MANAGER', 'CLUSTER_MANAGER', 'RETAIL_MANAGER'];
+            if (currentStatus === 'PENDING_MANAGER' && managerRoles.includes(role)) {
+                status = 'PENDING_HR';
+            } else {
+                status = 'APPROVED';
+            }
         }
 
-        if (!window.confirm(`Are you sure you want to ${status} this request?`)) return;
+        if (!window.confirm(`Are you sure you want to ${status === 'PENDING_HR' ? 'Recommend' : actionType.toLowerCase()} this request?`)) return;
 
         try {
-            await updateRequestStatus(requestId, status, rejectionReason);
-            loadRequests(); // Refresh list
+            // Pass user ID as actionBy
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            await updateRequestStatus(requestId, status, rejectionReason, user.employeeId || user.id);
+            // Note: API updated to accept actionBy in body, need to check if updateRequestStatus service supports it
+            loadRequests();
         } catch (error) {
             alert('Failed to update request status');
         }
@@ -132,19 +150,35 @@ const Requests = () => {
                                         )}
                                     </>
                                 )}
+                                {req.type === 'BRANCH_TRAVEL' && (
+                                    <>
+                                        <div className="detail-row">
+                                            <span className="label">Date</span>
+                                            <span className="value">{req.data?.date}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">Destination</span>
+                                            <span className="value">{req.data?.destination}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">Reason</span>
+                                            <span className="value">{req.data?.reason}</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
-                            {req.status === 'PENDING' && (
+                            {['PENDING', 'PENDING_MANAGER', 'PENDING_HR'].includes(req.status) && (
                                 <div className="action-buttons">
                                     <button
                                         className="btn-action btn-approve"
-                                        onClick={() => handleAction(req.requestId, 'APPROVED')}
+                                        onClick={() => handleAction(req.requestId, req.status, 'APPROVED')}
                                     >
-                                        Approve
+                                        {req.status === 'PENDING_MANAGER' ? 'Recommend' : 'Approve'}
                                     </button>
                                     <button
                                         className="btn-action btn-reject"
-                                        onClick={() => handleAction(req.requestId, 'REJECTED')}
+                                        onClick={() => handleAction(req.requestId, req.status, 'REJECTED')}
                                     >
                                         Reject
                                     </button>
@@ -161,7 +195,8 @@ const Requests = () => {
                 </div>
             )}
         </div>
-    );
-};
+    )
+}
+
 
 export default Requests;

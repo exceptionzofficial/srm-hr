@@ -11,9 +11,10 @@ import MobileAttendance from './pages/MobileAttendance';
 import KioskAttendance from './pages/KioskAttendance';
 import EmployeeRules from './pages/EmployeeRules';
 import AttendanceView from './pages/AttendanceView';
+import LiveTracking from './pages/LiveTracking';
 import './components/Layout.css'; // Load global CSS
 
-import Login from './pages/Login';
+import Login from './pages/Login'; // Keep existing login import if it was there, assumed line 16
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -34,6 +35,7 @@ function App() {
           <Route path="employee/edit/:id" element={<EmployeeForm />} />
           <Route path="salary" element={<Salary />} />
           <Route path="requests" element={<Requests />} />
+          <Route path="tracking" element={<LiveTracking />} />
           <Route path="chat" element={<ChatGroups />} />
           <Route path="attendance-report" element={<AttendanceReport />} />
           <Route path="attendance/mobile" element={<MobileAttendance />} />

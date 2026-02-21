@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { FiUsers, FiDollarSign, FiLogOut, FiMenu, FiFileText, FiClipboard } from 'react-icons/fi';
+import { FiUsers, FiDollarSign, FiLogOut, FiMenu, FiFileText, FiClipboard, FiMapPin } from 'react-icons/fi';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 import './Layout.css';
@@ -97,10 +97,10 @@ const Layout = () => {
 
     const fetchPendingRequests = async () => {
         try {
-            // We need to import getAllRequests properly. 
             // Since this component is inside 'components', and api is in '../services/api'
             const { getAllRequests } = await import('../services/api');
-            const data = await getAllRequests('PENDING');
+            const branchId = user.role !== 'HR_ADMIN' && user.role !== 'SUPER_ADMIN' ? user.branchId : null;
+            const data = await getAllRequests('PENDING', branchId);
             if (data && data.requests) {
                 setPendingCount(data.requests.length);
             }
@@ -120,9 +120,11 @@ const Layout = () => {
                     <NavLink to="/" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiUsers /> Employees
                     </NavLink>
-                    <NavLink to="/salary" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiDollarSign /> Salary Management
-                    </NavLink>
+                    {['HR_ADMIN', 'SUPER_ADMIN', 'FINANCE_ADMIN'].includes(user.role) && (
+                        <NavLink to="/salary" className={({ isActive }) => isActive ? 'active' : ''}>
+                            <FiDollarSign /> Salary Management
+                        </NavLink>
+                    )}
                     <NavLink to="/requests" className={({ isActive }) => isActive ? 'active' : ''}>
                         <div className="nav-item-content">
                             <span><FiFileText /> Requests</span>
@@ -130,6 +132,9 @@ const Layout = () => {
                                 <span className="notification-badge">{pendingCount}</span>
                             )}
                         </div>
+                    </NavLink>
+                    <NavLink to="/tracking" className={({ isActive }) => isActive ? 'active' : ''}>
+                        <FiMapPin /> Live Tracking
                     </NavLink>
                     <NavLink to="/attendance-report" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiClipboard /> Attendance Report
@@ -143,9 +148,11 @@ const Layout = () => {
                     <NavLink to="/chat" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiUsers /> Chat Groups
                     </NavLink>
-                    <NavLink to="/rules" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiFileText /> Rules
-                    </NavLink>
+                    {['HR_ADMIN', 'SUPER_ADMIN'].includes(user.role) && (
+                        <NavLink to="/rules" className={({ isActive }) => isActive ? 'active' : ''}>
+                            <FiFileText /> Rules
+                        </NavLink>
+                    )}
                 </nav>
                 <div className="logout">
                     <button><FiLogOut /> Logout</button>
@@ -169,7 +176,7 @@ const Layout = () => {
                     <button onClick={() => setSidebarOpen(!sidebarOpen)} className="toggle-btn">
                         <FiMenu />
                     </button>
-                    <span style={{ fontWeight: 500 }}>Welcome, HR Manager</span>
+                    <span style={{ fontWeight: 500 }}>Welcome, {user.name || 'Manager'} ({user.role?.replace('_', ' ') || 'User'})</span>
                 </header>
                 <div className="page-content">
                     <Outlet />
