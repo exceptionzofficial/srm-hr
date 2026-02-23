@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FiSend, FiMessageSquare, FiBarChart2, FiX, FiPlus, FiImage, FiPaperclip, FiCheckCircle, FiClock, FiUser, FiUsers, FiUserPlus, FiArrowDown, FiSearch } from 'react-icons/fi';
 import { getMessages, sendMessage, markMessageAsRead, votePoll, updateGroup, getEmployees } from '../services/api';
 import './ChatWindow.css';

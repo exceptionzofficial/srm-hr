@@ -1,6 +1,5 @@
-
-import { useState, useEffect } from 'react';
-import { FiPlus, FiUser, FiEdit2, FiSearch } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiPlus, FiUser, FiEdit2, FiSearch, FiCreditCard, FiArrowLeft } from 'react-icons/fi';
 import { getEmployees, createSalary, getSalaries, updateSalary } from '../services/api';
 
 const Salary = () => {
@@ -238,64 +237,57 @@ const Salary = () => {
     // View: List Employees
     if (!selectedEmployee) {
         return (
-            <div className="salary-page">
-                <div className="page-header" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                    <h1 className="page-title" style={{ margin: 0 }}>Salary Management</h1>
-
-                    {/* Search Bar */}
-                    <div style={{ background: 'white', padding: '8px 12px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', width: '300px', borderRadius: '4px' }}>
-                        <FiSearch style={{ marginRight: '8px', color: 'var(--text-muted)' }} />
+            <div className="salary-page fade-in">
+                <div className="section-header !mb-8">
+                    <div className="section-title">
+                        <FiCreditCard />
+                        <h2>Salary Management</h2>
+                    </div>
+                    <div className="search-container !w-80">
+                        <FiSearch className="search-icon" />
                         <input
                             type="text"
-                            placeholder="Search by Name or ID..."
-                            style={{ border: 'none', outline: 'none', fontSize: '14px', width: '100%', background: 'transparent' }}
+                            placeholder="Find employee to process..."
+                            className="search-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                 </div>
-                <div className="card" style={{ padding: '0', background: 'transparent', border: 'none', boxShadow: 'none' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+
+                <div className="card !bg-transparent !border-none !shadow-none !p-0">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
                         {filteredEmployees.map(emp => (
                             <div key={emp.employeeId}
-                                className="stat-card"
-                                style={{
-                                    cursor: 'pointer',
-                                    padding: '24px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '16px',
-                                    background: 'var(--bg-secondary)',
-                                    border: '1px solid var(--border)',
-                                    transition: 'all 0.2s',
-                                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                                }}
+                                className="card !p-6 !cursor-pointer flex flex-col gap-4 !transition-all hover:-translate-y-1"
                                 onClick={() => handleEmployeeSelect(emp)}
-                                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                    <div style={{ background: 'rgba(239, 65, 54, 0.08)', padding: '14px', borderRadius: '50%', color: 'var(--primary)' }}>
+                                <div className="flex items-center gap-4">
+                                    <div className="!w-12 !h-12 !bg-primary/5 !rounded-full !flex !items-center !justify-center !text-primary">
                                         <FiUser size={24} />
                                     </div>
                                     <div>
-                                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>{emp.name}</h3>
-                                        <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>{emp.designation || 'Staff'}</p>
+                                        <h3 className="!m-0 !text-base !font-bold text-slate-900">{emp.name}</h3>
+                                        <p className="!m-0 !text-xs text-slate-500 font-medium">{emp.designation || 'Staff Member'}</p>
                                     </div>
                                 </div>
-                                <div style={{ background: '#F9FAFB', padding: '12px', borderRadius: '4px', border: '1px solid #F3F4F6', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600, fontSize: '10px' }}>Employee ID</span>
-                                        <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#000', background: 'white', padding: '2px 6px', borderRadius: '3px', border: '1px solid #e5e7eb', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={emp.employeeId}>
+
+                                <div className="!bg-slate-50 !p-3 !rounded-lg !border !border-slate-100 flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="!text-[10px] !font-bold text-slate-400 !uppercase !tracking-wider">Employee ID</span>
+                                        <span className="!text-[11px] !font-bold !bg-white !px-2 !py-0.5 !rounded !border !border-slate-200 !max-w-[140px] !truncate" title={emp.employeeId}>
                                             {emp.employeeId}
                                         </span>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 600, fontSize: '10px' }}>Branch ID</span>
-                                        <span className="badge badge-secondary" style={{ fontSize: '11px' }}>{emp.branchId || 'N/A'}</span>
+                                    <div className="flex items-center justify-between">
+                                        <span className="!text-[10px] !font-bold text-slate-400 !uppercase !tracking-wider">Location</span>
+                                        <span className="badge badge-secondary !text-[11px] !font-bold">{emp.branchId || 'N/A'}</span>
                                     </div>
                                 </div>
-                                <button className="btn btn-secondary" style={{ width: '100%', marginTop: 'auto', justifyContent: 'center' }}>Manage Salary</button>
+
+                                <button className="btn btn-secondary !w-full !mt-2">
+                                    Manage Salary
+                                </button>
                             </div>
                         ))}
                     </div>

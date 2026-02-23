@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiUsers, FiSearch, FiEdit2, FiTrash2, FiPlus, FiMapPin, FiUser, FiCreditCard } from 'react-icons/fi';
 import { getEmployees, deleteEmployee, getBranches } from '../services/api';
+import './Employees.css';
 
 const Employees = () => {
     const navigate = useNavigate();
@@ -96,16 +97,19 @@ const Employees = () => {
     }
 
     return (
-        <div className="employees-page">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-                <h1 className="page-title" style={{ margin: 0 }}>Employees</h1>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <div className="search-box" style={{ background: 'white', padding: '8px 12px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', width: '300px' }}>
-                        <FiSearch style={{ marginRight: '8px', color: 'var(--text-muted)' }} />
+        <div className="employees-page fade-in">
+            <div className="section-header mb-8">
+                <div className="section-title">
+                    <FiSearch />
+                    <h2>Employee Directory</h2>
+                </div>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <div className="search-container w-80">
+                        <FiSearch className="search-icon" />
                         <input
                             type="text"
-                            placeholder="Search by name, ID or code..."
-                            style={{ border: 'none', outline: 'none', fontSize: '14px', width: '100%', background: 'transparent' }}
+                            placeholder="Find an employee..."
+                            className="search-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -116,27 +120,32 @@ const Employees = () => {
                 </div>
             </div>
 
-            {success && <div className="badge badge-success" style={{ display: 'block', marginBottom: '10px', padding: '10px' }}>{success}</div>}
-            {error && <div className="badge badge-danger" style={{ display: 'block', marginBottom: '10px', padding: '10px' }}>{error}</div>}
+            {success && <div className="badge badge-success justify-center" style={{ width: '100%', padding: '12px', marginBottom: '16px' }}>{success}</div>}
+            {error && <div className="badge badge-danger justify-center" style={{ width: '100%', padding: '12px', marginBottom: '16px' }}>{error}</div>}
 
 
             {/* Mobile App Employees Section */}
-            <h2 className="section-title" style={{ marginTop: '20px', marginBottom: '10px', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                📱 Mobile App Employees ({mobileEmployees.length})
-            </h2>
-            <div className="card">
+            <div className="branch-header-premium mt-0 mb-4">
+                <div className="branch-label">
+                    <span>📱 Mobile App Employees</span>
+                </div>
+                <div className="branch-count">
+                    {mobileEmployees.length} active members
+                </div>
+            </div>
+
+            <div className="card p-0 overflow-hidden mb-10">
                 {mobileEmployees.length > 0 ? (
                     <div className="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Employee ID</th>
-                                    <th>Name</th>
+                                    <th style={{ width: '120px' }}>ID & Code</th>
+                                    <th>Employee Details</th>
                                     <th>Work Mode</th>
-                                    <th>Details</th>
-                                    <th>Added By</th>
+                                    <th>Location & Finance</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th style={{ textAlign: 'center', width: '100px' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -144,22 +153,22 @@ const Employees = () => {
                                     <tr
                                         key={emp.employeeId}
                                         onClick={() => navigate(`/attendance/view/${emp.employeeId}`)}
-                                        style={{ cursor: 'pointer' }}
+                                        className="employee-card-row"
                                     >
                                         <td>
-                                            <strong>{emp.employeeId}</strong>
-                                            {emp.associateCode && <div style={{ fontSize: '11px', color: '#666' }}>{emp.associateCode}</div>}
+                                            <div className="font-bold text-slate-800">{emp.employeeId}</div>
+                                            {emp.associateCode && <div className="text-xs text-slate-400 font-medium">{emp.associateCode}</div>}
                                         </td>
                                         <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 {emp.photoUrl ? (
-                                                    <img src={emp.photoUrl} alt={emp.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                                                    <img src={emp.photoUrl} alt={emp.name} className="employee-photo" />
                                                 ) : (
-                                                    <div style={{ background: '#F5F5F5', borderRadius: '50%', padding: '8px', color: 'var(--primary)' }}><FiUser /></div>
+                                                    <div className="photo-placeholder"><FiUser size={20} /></div>
                                                 )}
                                                 <div>
-                                                    <div style={{ fontWeight: '500' }}>{emp.name}</div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{emp.designation || '-'}</div>
+                                                    <div className="font-bold text-slate-900">{emp.name}</div>
+                                                    <div className="text-xs text-slate-500">{emp.designation || 'Staff Member'}</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -169,21 +178,16 @@ const Employees = () => {
                                             </span>
                                         </td>
                                         <td>
-                                            <div style={{ fontSize: '13px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
-                                                    <FiMapPin size={12} /> {getBranchName(emp.branchId)}
+                                            <div className="text-slate-600">
+                                                <div className="flex items-center gap-1-5 mb-1 text-sm font-medium">
+                                                    <FiMapPin size={12} className="text-primary" /> {getBranchName(emp.branchId)}
                                                 </div>
                                                 {emp.bankAccount && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--success)', fontSize: '11px' }}>
+                                                    <div className="flex items-center gap-1-5 text-xs text-success font-bold">
                                                         <FiCreditCard size={12} /> {emp.bankAccount}
                                                     </div>
                                                 )}
                                             </div>
-                                        </td>
-                                        <td>
-                                            <span className="badge badge-secondary" style={{ background: '#e2e8f0', color: '#475569' }}>
-                                                {emp.addedBy || 'N/A'}
-                                            </span>
                                         </td>
                                         <td>
                                             <span className={`badge ${emp.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
@@ -191,11 +195,11 @@ const Employees = () => {
                                             </span>
                                         </td>
                                         <td>
-                                            <div className="action-buttons">
-                                                <button className="action-btn edit" onClick={(e) => { e.stopPropagation(); navigate(`/employee/edit/${emp.employeeId}`); }}>
+                                            <div className="action-buttons justify-center" onClick={(e) => e.stopPropagation()}>
+                                                <button className="action-btn edit" onClick={() => navigate(`/employee/edit/${emp.employeeId}`)}>
                                                     <FiEdit2 />
                                                 </button>
-                                                <button className="action-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete(emp.employeeId); }}>
+                                                <button className="action-btn delete" onClick={() => handleDelete(emp.employeeId)}>
                                                     <FiTrash2 />
                                                 </button>
                                             </div>
@@ -211,22 +215,27 @@ const Employees = () => {
             </div>
 
             {/* Kiosk Employees Section */}
-            <h2 className="section-title" style={{ marginTop: '30px', marginBottom: '10px', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                🖥️ Kiosk / Common Employees ({kioskEmployees.length})
-            </h2>
-            <div className="card">
+            <div className="branch-header-premium mb-4">
+                <div className="branch-label">
+                    <span>🖥️ Kiosk / Common Employees</span>
+                </div>
+                <div className="branch-count">
+                    {kioskEmployees.length} registered profiles
+                </div>
+            </div>
+
+            <div className="card p-0 overflow-hidden">
                 {kioskEmployees.length > 0 ? (
                     <div className="table-container">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Employee ID</th>
-                                    <th>Name</th>
+                                    <th style={{ width: '120px' }}>ID & Code</th>
+                                    <th>Employee Details</th>
                                     <th>Work Mode</th>
-                                    <th>Details</th>
-                                    <th>Added By</th>
+                                    <th>Location & Finance</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th style={{ textAlign: 'center', width: '100px' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -234,22 +243,22 @@ const Employees = () => {
                                     <tr
                                         key={emp.employeeId}
                                         onClick={() => navigate(`/attendance/view/${emp.employeeId}`)}
-                                        style={{ cursor: 'pointer' }}
+                                        className="employee-card-row"
                                     >
                                         <td>
-                                            <strong>{emp.employeeId}</strong>
-                                            {emp.associateCode && <div style={{ fontSize: '11px', color: '#666' }}>{emp.associateCode}</div>}
+                                            <div className="font-bold text-slate-800">{emp.employeeId}</div>
+                                            {emp.associateCode && <div className="text-xs text-slate-400 font-medium">{emp.associateCode}</div>}
                                         </td>
                                         <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                 {emp.photoUrl ? (
-                                                    <img src={emp.photoUrl} alt={emp.name} style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                                                    <img src={emp.photoUrl} alt={emp.name} className="employee-photo" />
                                                 ) : (
-                                                    <div style={{ background: '#F5F5F5', borderRadius: '50%', padding: '8px', color: 'var(--primary)' }}><FiUser /></div>
+                                                    <div className="photo-placeholder"><FiUser size={20} /></div>
                                                 )}
                                                 <div>
-                                                    <div style={{ fontWeight: '500' }}>{emp.name}</div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{emp.designation || '-'}</div>
+                                                    <div className="font-bold text-slate-900">{emp.name}</div>
+                                                    <div className="text-xs text-slate-500">{emp.designation || 'Kiosk Access'}</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -259,21 +268,16 @@ const Employees = () => {
                                             </span>
                                         </td>
                                         <td>
-                                            <div style={{ fontSize: '13px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
-                                                    <FiMapPin size={12} /> {getBranchName(emp.branchId)}
+                                            <div className="text-slate-600">
+                                                <div className="flex items-center gap-1-5 mb-1 text-sm font-medium">
+                                                    <FiMapPin size={12} className="text-primary" /> {getBranchName(emp.branchId)}
                                                 </div>
                                                 {emp.bankAccount && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--success)', fontSize: '11px' }}>
+                                                    <div className="flex items-center gap-1-5 text-xs text-success font-bold">
                                                         <FiCreditCard size={12} /> {emp.bankAccount}
                                                     </div>
                                                 )}
                                             </div>
-                                        </td>
-                                        <td>
-                                            <span className="badge badge-secondary" style={{ background: '#e2e8f0', color: '#475569' }}>
-                                                {emp.addedBy || 'N/A'}
-                                            </span>
                                         </td>
                                         <td>
                                             <span className={`badge ${emp.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
@@ -281,11 +285,11 @@ const Employees = () => {
                                             </span>
                                         </td>
                                         <td>
-                                            <div className="action-buttons">
-                                                <button className="action-btn edit" onClick={(e) => { e.stopPropagation(); navigate(`/employee/edit/${emp.employeeId}`); }}>
+                                            <div className="action-buttons justify-center" onClick={(e) => e.stopPropagation()}>
+                                                <button className="action-btn edit" onClick={() => navigate(`/employee/edit/${emp.employeeId}`)}>
                                                     <FiEdit2 />
                                                 </button>
-                                                <button className="action-btn delete" onClick={(e) => { e.stopPropagation(); handleDelete(emp.employeeId); }}>
+                                                <button className="action-btn delete" onClick={() => handleDelete(emp.employeeId)}>
                                                     <FiTrash2 />
                                                 </button>
                                             </div>
@@ -296,7 +300,7 @@ const Employees = () => {
                         </table>
                     </div>
                 ) : (
-                    <p className="empty-message" style={{ textAlign: 'center', padding: '20px', color: '#777' }}>No kiosk employees found.</p>
+                    <p className="empty-message" style={{ textAlign: 'center', padding: '60px', color: '#94a3b8' }}>No kiosk employees found in this directory.</p>
                 )}
             </div>
         </div>

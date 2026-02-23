@@ -71,6 +71,10 @@ const EmployeeForm = () => {
         ifscCode: '',
         paymentMode: 'Account Transfer',
         fixedSalary: '',
+        basicSalary: '',
+        hra: '',
+        specialAllowance: '',
+        otherAllowance: '',
 
         // Education
         degree: '',
@@ -152,6 +156,11 @@ const EmployeeForm = () => {
                         expToDate: emp.experienceDetails?.[0]?.toDate || '',
                         expYears: emp.experienceDetails?.[0]?.yearsExp || '',
                         expCtc: emp.experienceDetails?.[0]?.ctc || '',
+                        // Salary breakdown
+                        basicSalary: emp.salaryBreakdown?.basic || '',
+                        hra: emp.salaryBreakdown?.hra || '',
+                        specialAllowance: emp.salaryBreakdown?.specialAllowance || '',
+                        otherAllowance: emp.salaryBreakdown?.otherAllowance || '',
                     }));
 
                     // Mark verified if editing existing employee
@@ -251,6 +260,13 @@ const EmployeeForm = () => {
                     yearsExp: formData.expYears,
                     ctc: formData.expCtc
                 }],
+                salaryBreakdown: {
+                    basic: formData.basicSalary,
+                    hra: formData.hra,
+                    specialAllowance: formData.specialAllowance,
+                    otherAllowance: formData.otherAllowance,
+                    grossSalary: formData.fixedSalary
+                },
                 familyDetails: {
                     guardianName: formData.guardianName,
                     personalMobile: formData.personalMobile,
@@ -399,7 +415,18 @@ const EmployeeForm = () => {
                         <div className="form-group"><label className="label">Account Number</label><input type="text" className="input" value={formData.accountNumber} onChange={e => handleChange('accountNumber', e.target.value)} /></div>
                         <div className="form-group"><label className="label">IFSC Code</label><input type="text" className="input uppercase" value={formData.ifscCode} onChange={e => handleChange('ifscCode', e.target.value)} /></div>
                         <div className="form-group"><label className="label">Payment Mode</label><select className="input" value={formData.paymentMode} onChange={e => handleChange('paymentMode', e.target.value)}><option value="Account Transfer">Account Transfer</option><option value="Cash">Cash</option><option value="Cheque">Cheque</option></select></div>
-                        <div className="form-group"><label className="label">Fixed Salary</label><input type="number" className="input" value={formData.fixedSalary} onChange={e => handleChange('fixedSalary', e.target.value)} /></div>
+                        <div className="form-group"><label className="label">Total Gross Salary (Monthly)</label><input type="number" className="input font-bold" value={formData.fixedSalary} onChange={e => handleChange('fixedSalary', e.target.value)} placeholder="e.g. 25000" /></div>
+
+                        <div className="col-span-full border-t pt-4 mt-2">
+                            <h4 className="text-sm font-bold text-gray-700 mb-4">Monthly Salary Breakdown</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="form-group"><label className="label text-xs">Basic Salary</label><input type="number" className="input py-2 text-sm" value={formData.basicSalary} onChange={e => handleChange('basicSalary', e.target.value)} placeholder="Basic" /></div>
+                                <div className="form-group"><label className="label text-xs">HRA</label><input type="number" className="input py-2 text-sm" value={formData.hra} onChange={e => handleChange('hra', e.target.value)} placeholder="HRA" /></div>
+                                <div className="form-group"><label className="label text-xs">Special Allowance</label><input type="number" className="input py-2 text-sm" value={formData.specialAllowance} onChange={e => handleChange('specialAllowance', e.target.value)} placeholder="Special" /></div>
+                                <div className="form-group"><label className="label text-xs">Other Allowance</label><input type="number" className="input py-2 text-sm" value={formData.otherAllowance} onChange={e => handleChange('otherAllowance', e.target.value)} placeholder="Other" /></div>
+                            </div>
+                            <p className="text-[10px] text-gray-500 mt-2 italic">* These components will be used for automated PF and salary slip generation.</p>
+                        </div>
                     </div>
                 )}
 

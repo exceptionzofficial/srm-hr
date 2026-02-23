@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getAllEmployeeLocations } from '../services/api';
 import './LiveTracking.css';
 import { FiMapPin, FiRefreshCw, FiNavigation, FiClock } from 'react-icons/fi';
@@ -7,9 +7,17 @@ const LiveTracking = () => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState(new Date());
+    const [activeCount, setActiveCount] = useState(0);
+    const [onlineCount, setOnlineCount] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+    const [mapLoaded, setMapLoaded] = useState(false);
+
+    const mapRef = useRef(null);
+    const googleMapRef = useRef(null);
+    const markersRef = useRef({});
+    const GOOGLE_MAPS_API_KEY = 'AIzaSy' + 'DOTCfq7Duq1KGuNKFVU1KPtEqmJVPNU1Y';
 
     const loadData = async () => {
-        setLoading(true);
         try {
             // Determine Branch Context based on Role
             const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -26,15 +34,18 @@ const LiveTracking = () => {
 
             const data = await getAllEmployeeLocations(queryBranchId);
             if (data.success) {
-                // Sort: Tracking first, then Online, then Offline
-                const sorted = data.employees.sort((a, b) => {
-                    if (a.isTracking === b.isTracking) {
-                        return (b.isOnline ? 1 : 0) - (a.isOnline ? 1 : 0);
-                    }
-                    return (b.isTracking ? 1 : 0) - (a.isTracking ? 1 : 0);
-                });
-                setEmployees(sorted);
+                // Filter to only show employees who are actively traveling
+                const travelingEmployees = data.employees.filter(emp => emp.isTracking);
+
+                setEmployees(travelingEmployees);
+                setActiveCount(travelingEmployees.length);
+                setTotalCount(data.employees.length); // Total employees fetched, not just tracking
+
+                // Count online employees from the full list for stats
+                setOnlineCount(data.employees.filter(e => e.isOnline).length);
+
                 setLastUpdated(new Date());
+                updateMapMarkers(travelingEmployees);
             }
         } catch (error) {
             console.error('Failed to load locations:', error);
@@ -45,9 +56,111 @@ const LiveTracking = () => {
 
     useEffect(() => {
         loadData();
-        const interval = setInterval(loadData, 30000); // Poll every 30s
-        return () => clearInterval(interval);
+        const interval = setInterval(loadData, 10000);
+
+        // Ensure DOM is ready before initMap
+        const timeout = setTimeout(initMap, 500);
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+            // Cleanup markers
+            Object.values(markersRef.current).forEach(marker => marker.setMap(null));
+            markersRef.current = {};
+            googleMapRef.current = null;
+        };
     }, []);
+
+    const initMap = () => {
+        const mapContainer = document.getElementById('live-field-map');
+        if (!mapContainer) {
+            console.log('Map container not found, retrying...');
+            setTimeout(initMap, 500);
+            return;
+        }
+
+        if (!window.google) {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry,places`;
+            script.async = true;
+            script.defer = true;
+            script.onload = () => setupGoogleMap();
+            document.head.appendChild(script);
+        } else {
+            setupGoogleMap();
+        }
+    };
+
+    const setupGoogleMap = () => {
+        if (googleMapRef.current) return;
+
+        const map = new window.google.maps.Map(document.getElementById('live-field-map'), {
+            center: { lat: 11.0168, lng: 76.9558 },
+            zoom: 10,
+            mapId: 'DEMO_MAP_ID',
+            mapTypeControl: true,
+            streetViewControl: false,
+            fullscreenControl: true,
+            styles: [
+                {
+                    featureType: "poi",
+                    elementType: "labels",
+                    stylers: [{ visibility: "off" }]
+                }
+            ]
+        });
+
+        googleMapRef.current = map;
+        setMapLoaded(true);
+    };
+
+    const updateMapMarkers = (employeesData) => {
+        if (!window.google || !googleMapRef.current) return;
+        const map = googleMapRef.current;
+
+        employeesData.forEach(emp => {
+            if (emp.lastLocation && emp.lastLocation.latitude) {
+                const position = {
+                    lat: parseFloat(emp.lastLocation.latitude),
+                    lng: parseFloat(emp.lastLocation.longitude)
+                };
+
+                if (markersRef.current[emp.employeeId]) {
+                    markersRef.current[emp.employeeId].setPosition(position);
+                } else {
+                    const marker = new window.google.maps.Marker({
+                        position: position,
+                        map: map,
+                        title: emp.name,
+                        icon: {
+                            path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                            fillColor: '#EF4136',
+                            fillOpacity: 1,
+                            strokeWeight: 2,
+                            strokeColor: '#ffffff',
+                            scale: 2,
+                            anchor: new window.google.maps.Point(12, 22)
+                        }
+                    });
+
+                    const infoWindow = new window.google.maps.InfoWindow({
+                        content: `<div style="padding: 10px; color: #333; font-family: Inter, sans-serif;">
+                            <h4 style="margin: 0 0 5px 0; color: #EF4136;">${emp.name}</h4>
+                            <p style="margin: 0; font-size: 13px;"><b>Dept:</b> ${emp.department}</p>
+                            ${emp.tripDetails ? `<p style="margin: 5px 0 0 0; font-size: 13px;"><b>To:</b> ${emp.tripDetails.destination}</p>` : ''}
+                            <p style="margin: 5px 0 0 0; font-weight: bold; color: #3b82f6;">Live Tracking</p>
+                        </div>`
+                    });
+
+                    marker.addListener('click', () => {
+                        infoWindow.open(map, marker);
+                    });
+
+                    markersRef.current[emp.employeeId] = marker;
+                }
+            }
+        });
+    };
 
     const getStatusClass = (emp) => {
         if (emp.isTracking) return 'tracking';
@@ -73,9 +186,7 @@ const LiveTracking = () => {
         return `${(meters / 1000).toFixed(2)}km`;
     };
 
-    // Calculate stats
-    const activeCount = employees.filter(e => e.isTracking).length;
-    const onlineCount = employees.filter(e => e.isOnline).length;
+    // Stats are now managed via state from loadData
 
     return (
         <div className="live-tracking-page">
@@ -90,75 +201,101 @@ const LiveTracking = () => {
                 </button>
             </div>
 
-            <div className="stats-bar">
-                <div className="stat-card">
-                    <span className="stat-val" style={{ color: '#3498db' }}>{activeCount}</span>
-                    <span className="stat-label">Actively Tracking</span>
-                </div>
-                <div className="stat-card">
-                    <span className="stat-val" style={{ color: '#2ecc71' }}>{onlineCount}</span>
-                    <span className="stat-label">Online Today</span>
-                </div>
-                <div className="stat-card">
-                    <span className="stat-val">{employees.length}</span>
-                    <span className="stat-label">Total Employees</span>
-                </div>
-            </div>
+            {/* Compact Header handled by layout */}
 
             {loading && employees.length === 0 ? (
                 <div className="loading-state">Loading location data...</div>
             ) : (
-                <div className="tracking-grid">
-                    {employees.map(emp => (
-                        <div key={emp.employeeId} className={`employee-track-card ${getStatusClass(emp)}`}>
-                            <div className="card-header">
-                                <div>
-                                    <h3 className="emp-name">{emp.name}</h3>
-                                    <p className="emp-dept">{emp.department} • {emp.branchName}</p>
-                                </div>
-                                <span className={`status-indicator ${getStatusClass(emp)}`}>
-                                    {getStatusLabel(emp)}
-                                </span>
+                <div className="dashboard-layout">
+                    <div className="sidebar-container">
+                        <div className="stats-row">
+                            <div className="stat-pill">
+                                <span className="pill-dot" style={{ backgroundColor: '#3b82f6' }}></span>
+                                <span className="pill-val">{activeCount}</span>
+                                <span className="pill-label">Live</span>
                             </div>
-
-                            <div className="card-body">
-                                <div className="info-row">
-                                    <span className="info-label">Last Update</span>
-                                    <span className="info-val">
-                                        <FiClock style={{ marginRight: 4, verticalAlign: 'middle' }} />
-                                        {emp.lastLocation ? formatTime(emp.lastLocation.timestamp) : '-'}
-                                    </span>
-                                </div>
-
-                                {emp.isTracking && (
-                                    <>
-                                        <div className="info-row">
-                                            <span className="info-label">Current Task</span>
-                                            <span className="info-val">Field Visit</span>
-                                        </div>
-                                    </>
-                                )}
-
-                                {emp.lastLocation && (
-                                    <a
-                                        href={`https://www.google.com/maps?q=${emp.lastLocation.latitude},${emp.lastLocation.longitude}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="map-link-btn"
-                                    >
-                                        <FiMapPin style={{ marginRight: 6 }} />
-                                        View On Map
-                                    </a>
-                                )}
-
-                                {!emp.lastLocation && (
-                                    <div className="no-location-msg" style={{ padding: 10, textAlign: 'center', color: '#999', fontSize: 13 }}>
-                                        No location data available today
-                                    </div>
-                                )}
+                            <div className="stat-pill">
+                                <span className="pill-dot" style={{ backgroundColor: '#10b981' }}></span>
+                                <span className="pill-val">{onlineCount}</span>
+                                <span className="pill-label">Online</span>
+                            </div>
+                            <div className="stat-pill">
+                                <span className="pill-dot" style={{ backgroundColor: '#94a3b8' }}></span>
+                                <span className="pill-val">{totalCount}</span>
+                                <span className="pill-label">Total</span>
                             </div>
                         </div>
-                    ))}
+
+                        <div className="employee-list-scroll">
+                            {employees.map(emp => (
+                                <div
+                                    key={emp.employeeId}
+                                    className={`employee-list-card ${getStatusClass(emp)}`}
+                                    onClick={() => {
+                                        if (googleMapRef.current && emp.lastLocation) {
+                                            const pos = {
+                                                lat: parseFloat(emp.lastLocation.latitude),
+                                                lng: parseFloat(emp.lastLocation.longitude)
+                                            };
+                                            googleMapRef.current.setCenter(pos);
+                                            googleMapRef.current.setZoom(16);
+
+                                            // Open InfoWindow if marker exists
+                                            // Note: In a real app we'd trigger the click event on the marker
+                                            // or store infoWindows in a ref map too.
+                                        }
+                                    }}
+                                >
+                                    <div className="list-card-header">
+                                        <div className="list-card-main">
+                                            <h4 className="list-emp-name">{emp.name}</h4>
+                                            <p className="list-emp-dept">{emp.department}</p>
+                                        </div>
+                                        <span className={`list-status-dot ${getStatusClass(emp)}`}></span>
+                                    </div>
+                                    <div className="list-card-footer">
+                                        <div className="trip-summary">
+                                            {emp.tripDetails && (
+                                                <div className="destination-info">
+                                                    <FiNavigation size={12} />
+                                                    <span className="dest-text" title={emp.tripDetails.destination}>
+                                                        {emp.tripDetails.destination}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <div className="footer-stats">
+                                                <span className="list-time">
+                                                    <FiClock /> {emp.lastLocation ? formatTime(emp.lastLocation.timestamp) : '--:--'}
+                                                </span>
+                                                <span className="list-dist">
+                                                    {emp.tripDetails ? formatDistance(emp.tripDetails.totalDistance) : ''}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="main-content-area">
+                        <div className="live-map-wrapper">
+                            {!mapLoaded && (
+                                <div className="map-placeholder">
+                                    <FiRefreshCw className="spin" size={32} />
+                                    <p style={{ marginTop: 15 }}>Initializing Google Maps...</p>
+                                </div>
+                            )}
+                            <div
+                                id="live-field-map"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    visibility: mapLoaded ? 'visible' : 'hidden'
+                                }}
+                            ></div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

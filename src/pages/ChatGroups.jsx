@@ -1,8 +1,7 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { FiPlus, FiTrash2, FiSearch, FiX } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiSearch, FiX, FiMessageSquare } from 'react-icons/fi';
 import { getEmployees, createGroup, deleteGroup, getUserGroups, markMessageAsRead, getBranches } from '../services/api';
 import ChatWindow from '../components/ChatWindow';
 import srmLogo from '../assets/srm-logo.png';
@@ -213,12 +212,23 @@ const ChatGroups = () => {
     return (
         <div className="chat-page-container">
             <div className="groups-sidebar">
-                <div className="sidebar-header">
-                    <div className="header-left">
-                        <h1>Chat Groups</h1>
+                <div className="section-header" style={{ padding: '20px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FiMessageSquare size={20} color="var(--success)" />
+                        <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--success)', margin: 0 }}>Chat Groups</h2>
                     </div>
-                    <button className="btn-icon" onClick={() => setShowModal(true)} title="New Group">
-                        <FiPlus />
+                    <button className="btn-icon" style={{
+                        width: '32px',
+                        height: '32px',
+                        background: 'white',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                    }} onClick={() => setShowModal(true)} title="New Group">
+                        <FiPlus size={16} />
                     </button>
                 </div>
 

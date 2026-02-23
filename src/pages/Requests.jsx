@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllRequests, updateRequestStatus } from '../services/api';
+import { FiFileText, FiClock, FiCheckCircle, FiXCircle, FiSearch } from 'react-icons/fi';
 import './Requests.css'; // Import the new Premium CSS
 
 const Requests = () => {
@@ -72,7 +73,7 @@ const Requests = () => {
         try {
             // Pass user ID as actionBy
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            await updateRequestStatus(requestId, status, rejectionReason, user.employeeId || user.id);
+            await updateRequestStatus(requestId, status, rejectionReason);
             // Note: API updated to accept actionBy in body, need to check if updateRequestStatus service supports it
             loadRequests();
         } catch (error) {
@@ -81,18 +82,24 @@ const Requests = () => {
     };
 
     return (
-        <div className="page-container">
-            <div className="page-header">
-                <h2 className="page-title">Request Management</h2>
-                <select
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="filter-select"
-                >
-                    <option value="PENDING">Pending</option>
-                    <option value="APPROVED">Approved</option>
-                    <option value="REJECTED">Rejected</option>
-                </select>
+        <div className="page-container fade-in">
+            <div className="section-header">
+                <div className="section-title">
+                    <FiSearch />
+                    <h2>Request Management</h2>
+                </div>
+                <div className="search-container">
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginRight: '8px' }}>Status Filter:</span>
+                    <select
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        className="filter-select"
+                    >
+                        <option value="PENDING">Pending</option>
+                        <option value="APPROVED">Approved</option>
+                        <option value="REJECTED">Rejected</option>
+                    </select>
+                </div>
             </div>
 
             {loading ? (

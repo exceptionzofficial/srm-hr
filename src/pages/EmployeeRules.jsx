@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getEmployeeRules } from '../services/api';
+import { FiBookOpen } from 'react-icons/fi';
 import './EmployeeRules.css'; // Reusing similar styles or create new
 
 const EmployeeRules = () => {
@@ -28,10 +29,12 @@ const EmployeeRules = () => {
 
     return (
         <div className="rules-page">
-            <header className="page-header">
-                <h1>Employee Rules & Guidelines</h1>
-                <p>Please read the following company policies carefully.</p>
-            </header>
+            <div className="section-header">
+                <div className="section-title">
+                    <FiBookOpen />
+                    <h2>Company Rules & Guidelines</h2>
+                </div>
+            </div>
 
             {message && <div style={{ color: 'red', marginBottom: '1rem' }}>{message.text}</div>}
 

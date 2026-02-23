@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAttendanceReport, getBranchById } from '../services/api';
+import { FiSearch } from 'react-icons/fi';
 import './AttendanceReport.css';
 
 const AttendanceReport = () => {
@@ -35,6 +36,11 @@ const AttendanceReport = () => {
             setDate(today);
         }
     }, [reportType]);
+
+    // Auto-load today's report on page load
+    useEffect(() => {
+        handleGenerate();
+    }, []);
 
     const handleGenerate = async () => {
         try {
@@ -198,6 +204,13 @@ const AttendanceReport = () => {
         }
     };
 
+    const formatMinutes = (minutes) => {
+        if (!minutes || minutes <= 0) return '-';
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        return `${h}h ${m}m`;
+    };
+
     const getStatusBadge = (statusList, color) => {
         if (!statusList) return null;
         return (
@@ -213,8 +226,11 @@ const AttendanceReport = () => {
 
     return (
         <div className="attendance-report-page">
-            <div className="page-header">
-                <h1>Attendance Report</h1>
+            <div className="section-header">
+                <div className="section-title">
+                    <FiSearch />
+                    <h2>Attendance Directory</h2>
+                </div>
             </div>
 
             <div className="report-controls">
@@ -269,8 +285,13 @@ const AttendanceReport = () => {
                 )}
 
                 <div className="button-group">
-                    <button onClick={handleGenerate} className="generate-btn" disabled={loading}>
-                        {loading ? 'Generating...' : 'Generate Report'}
+                    <button
+                        onClick={handleGenerate}
+                        className="generate-btn"
+                        disabled={loading}
+                        style={{ background: 'var(--success)', color: 'white' }}
+                    >
+                        {loading ? 'Generating...' : (reportType === 'daily' ? "Create Today's Report" : 'Generate Report')}
                     </button>
                     {fetched && report.length > 0 && (
                         <button onClick={downloadCSV} className="download-btn">
@@ -339,6 +360,7 @@ const AttendanceReport = () => {
                                         <th>Department</th>
                                         <th>In Time</th>
                                         <th>Out Time</th>
+                                        <th>Duration</th>
                                         <th>Status</th>
                                         <th>Remarks</th>
                                     </tr>
@@ -354,12 +376,15 @@ const AttendanceReport = () => {
                                                 <td>{row.department || '-'}</td>
                                                 <td>{row.times?.in || '-'}</td>
                                                 <td>{row.times?.out || '-'}</td>
+                                                <td style={{ fontWeight: '500', color: '#1e293b' }}>
+                                                    {formatMinutes(row.totalWorkMinutes)}
+                                                </td>
                                                 <td>{getStatusBadge(row.status, row.color)}</td>
                                                 <td>{row.remarks || '-'}</td>
                                             </tr>
                                         ))
                                     ) : (
-                                        <tr><td colSpan="6" className="no-data">No records found.</td></tr>
+                                        <tr><td colSpan="7" className="no-data">No records found.</td></tr>
                                     )}
                                 </tbody>
                             </table>

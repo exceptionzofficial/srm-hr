@@ -1,6 +1,18 @@
-
-import { useState, useEffect, useRef } from 'react';
-import { FiUsers, FiDollarSign, FiLogOut, FiMenu, FiFileText, FiClipboard, FiMapPin } from 'react-icons/fi';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+    FiUsers,
+    FiDollarSign,
+    FiLogOut,
+    FiMenu,
+    FiFileText,
+    FiClipboard,
+    FiMapPin,
+    FiBarChart2,
+    FiSmartphone,
+    FiMonitor,
+    FiMessageSquare,
+    FiBookOpen
+} from 'react-icons/fi';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 import './Layout.css';
@@ -137,25 +149,25 @@ const Layout = () => {
                         <FiMapPin /> Live Tracking
                     </NavLink>
                     <NavLink to="/attendance-report" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiClipboard /> Attendance Report
+                        <FiBarChart2 /> Attendance Report
                     </NavLink>
                     <NavLink to="/attendance/mobile" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiClipboard /> Mobile Attendance
+                        <FiSmartphone /> Mobile Attendance
                     </NavLink>
                     <NavLink to="/attendance/kiosk" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiClipboard /> Kiosk Attendance
+                        <FiMonitor /> Kiosk Attendance
                     </NavLink>
                     <NavLink to="/chat" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiUsers /> Chat Groups
+                        <FiMessageSquare /> Chat Groups
                     </NavLink>
                     {['HR_ADMIN', 'SUPER_ADMIN'].includes(user.role) && (
                         <NavLink to="/rules" className={({ isActive }) => isActive ? 'active' : ''}>
-                            <FiFileText /> Rules
+                            <FiBookOpen /> Rules
                         </NavLink>
                     )}
                 </nav>
                 <div className="logout">
-                    <button><FiLogOut /> Logout</button>
+                    <button onClick={() => { localStorage.removeItem('user'); navigate('/login'); }}><FiLogOut /> Logout</button>
                 </div>
             </aside>
             <main className="content">
@@ -165,24 +177,36 @@ const Layout = () => {
                         onClick={handleNotificationClick}
                         style={{ cursor: notification.groupId ? 'pointer' : 'default' }}
                     >
-                        <div className="toast-content">
-                            <FiUsers className="toast-icon" />
-                            <span>{notification.message}</span>
+                        <FiUsers className="toast-icon" />
+                        <div className="toast-body">
+                            <span className="toast-message">{notification.message}</span>
                         </div>
                         <button className="toast-close" onClick={(e) => { e.stopPropagation(); setNotification(null); }}>×</button>
                     </div>
                 )}
                 <header className="top-bar">
-                    <button onClick={() => setSidebarOpen(!sidebarOpen)} className="toggle-btn">
-                        <FiMenu />
-                    </button>
-                    <span style={{ fontWeight: 500 }}>Welcome, {user.name || 'Manager'} ({user.role?.replace('_', ' ') || 'User'})</span>
+                    <div className="top-bar-left">
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="toggle-btn">
+                            <FiMenu />
+                        </button>
+                    </div>
+                    <div className="top-bar-right">
+                        <div className="user-profile-summary">
+                            <div className="user-info-text">
+                                <span className="user-role-badge">{user.role?.replace('_', ' ') || 'Manager'}</span>
+                                <span className="user-name-display">{user.name || 'Admin'}</span>
+                            </div>
+                            <div className="user-profile-avatar">
+                                <FiUsers />
+                            </div>
+                        </div>
+                    </div>
                 </header>
                 <div className="page-content">
                     <Outlet />
                 </div>
             </main>
-        </div >
+        </div>
     );
 };
 

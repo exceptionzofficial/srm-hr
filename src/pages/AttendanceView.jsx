@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiChevronLeft, FiChevronRight, FiArrowLeft } from 'react-icons/fi';
 import { getEmployeeById, getAttendanceCalendar, getRequestsByEmployee } from '../services/api';
