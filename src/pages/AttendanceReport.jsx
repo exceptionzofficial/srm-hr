@@ -145,7 +145,7 @@ const AttendanceReport = () => {
 
             if (isRange) {
                 // Summary CSV
-                const headers = ['Employee ID', 'Name', 'Department', 'Total Days', 'Present', 'Absent', 'Late In', 'Early Out', 'Leave', 'Permission', 'Half Day'];
+                const headers = ['Employee ID', 'Name', 'Department', 'Total Days', 'Present', 'Absent', 'Late In', 'Early Out', 'Leave', 'Permission', 'Travel', 'Half Day'];
                 const rows = report.map(row => {
                     const stats = row.stats;
                     const name = `"${(row.name || '').replace(/"/g, '""')}"`;
@@ -162,6 +162,7 @@ const AttendanceReport = () => {
                         stats.earlyOut,
                         stats.leave,
                         stats.permission,
+                        stats.travel,
                         stats.halfDay
                     ].join(',');
                 });
@@ -336,6 +337,10 @@ const AttendanceReport = () => {
                                 <h3>Late In</h3>
                                 <p>{report.filter(r => r.status.includes('Late in')).length}</p>
                             </div>
+                            <div className="card">
+                                <h3>On Travel</h3>
+                                <p>{report.filter(r => r.status.includes('On Travel')).length}</p>
+                            </div>
                         </div>
                     ) : (
                         <div className="summary-cards">
@@ -400,6 +405,7 @@ const AttendanceReport = () => {
                                         <th>Early Out</th>
                                         <th>Leaves</th>
                                         <th>Permissions</th>
+                                        <th>Travel</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -416,6 +422,7 @@ const AttendanceReport = () => {
                                                 <td>{row.stats?.earlyOut || 0}</td>
                                                 <td style={{ color: '#1d4ed8' }}>{row.stats?.leave || 0}</td>
                                                 <td>{row.stats?.permission || 0}</td>
+                                                <td style={{ color: '#00796B', fontWeight: 'bold' }}>{row.stats?.travel || 0}</td>
                                             </tr>
                                         ))
                                     ) : (

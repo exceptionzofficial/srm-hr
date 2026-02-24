@@ -385,9 +385,24 @@ const ChatWindow = ({ group, currentUser }) => {
         <div className="chat-window">
             <div className="chat-header">
                 <div className="header-top">
-                    <div className="header-info">
-                        <h3>{group.name}</h3>
-                        <span>{group.members?.length} members</span>
+                    <div className="header-info" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="group-avatar-sm" style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '10px',
+                            background: '#f8f9fa',
+                            border: '1px solid var(--border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                        }}>
+                            <img src="/srm-logo.png" alt="Logo" style={{ height: '100%', width: '100%', objectFit: 'contain', padding: '4px' }} />
+                        </div>
+                        <div>
+                            <h3 style={{ margin: 0 }}>{group.name}</h3>
+                            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{group.members?.length} members</span>
+                        </div>
                     </div>
                     {group.task && (
                         <div className="pinned-task">

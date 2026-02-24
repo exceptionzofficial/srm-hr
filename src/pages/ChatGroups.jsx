@@ -212,10 +212,10 @@ const ChatGroups = () => {
     return (
         <div className="chat-page-container">
             <div className="groups-sidebar">
-                <div className="section-header" style={{ padding: '20px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FiMessageSquare size={20} color="var(--success)" />
-                        <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--success)', margin: 0 }}>Chat Groups</h2>
+                <div className="sidebar-header" style={{ padding: '24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <img src="/srm-logo.png" alt="Logo" style={{ height: '32px', width: '32px', objectFit: 'contain' }} />
+                        <h1 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>Chat Groups</h1>
                     </div>
                     <button className="btn-icon" style={{
                         width: '32px',
@@ -249,8 +249,18 @@ const ChatGroups = () => {
                                     className={`group-item ${isSelected ? 'active' : ''}`}
                                     onClick={() => handleGroupSelect(group)}
                                 >
-                                    <div className="group-avatar">
-                                        <img src={srmLogo} alt="Grp" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                                    <div className="group-avatar" style={{
+                                        width: '48px',
+                                        height: '48px',
+                                        borderRadius: '12px',
+                                        background: '#f8f9fa',
+                                        border: '1px solid var(--border)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0
+                                    }}>
+                                        <img src="/srm-logo.png" alt="SRM" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
                                     </div>
                                     <div className="group-content">
                                         <div className="group-name-row">
