@@ -182,11 +182,15 @@
 }
 
 .user-role-badge {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 800;
     color: var(--primary);
+    background: rgba(239, 65, 54, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 .user-name-display {
