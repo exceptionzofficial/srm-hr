@@ -140,7 +140,7 @@ const ChatWindow = ({ group, currentUser }) => {
         try {
             let payload = {
                 content: newMessage,
-                senderName: currentUser.name || "User",
+                senderName: currentUser.name || "HR Manager",
                 senderId: currentUser.id,
                 type: 'text'
             };
@@ -148,7 +148,7 @@ const ChatWindow = ({ group, currentUser }) => {
             if (selectedFile) {
                 const formData = new FormData();
                 formData.append('file', selectedFile);
-                formData.append('senderName', currentUser.name || "User");
+                formData.append('senderName', currentUser.name || "HR Manager");
                 formData.append('senderId', currentUser.id);
                 // Type is handled by backend or derived from file
                 payload = formData;

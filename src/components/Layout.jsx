@@ -193,8 +193,8 @@ const Layout = () => {
                     <div className="top-bar-right">
                         <div className="user-profile-summary">
                             <div className="user-info-text">
-                                <span className="user-role-badge">{user.role?.replace('_', ' ') || 'Manager'}</span>
-                                <span className="user-name-display">{user.name || 'Admin'}</span>
+                                <span className="user-role-badge">{user.role === 'HR_ADMIN' ? 'HR Manager' : (user.role?.replace('_', ' ') || 'HR Manager')}</span>
+                                <span className="user-name-display">{user.name || 'Manager'}</span>
                             </div>
                             <div className="user-profile-avatar">
                                 <FiUsers />
