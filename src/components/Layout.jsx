@@ -145,6 +145,9 @@ const Layout = () => {
                             )}
                         </div>
                     </NavLink>
+                    <NavLink to="/advance-tracking" className={({ isActive }) => isActive ? 'active' : ''}>
+                        <FiDollarSign /> Advance
+                    </NavLink>
                     <NavLink to="/tracking" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiMapPin /> Live Tracking
                     </NavLink>
@@ -194,7 +197,7 @@ const Layout = () => {
                         <div className="user-profile-summary">
                             <div className="user-info-text">
                                 <span className="user-role-badge">{user.role === 'HR_ADMIN' ? 'HR Manager' : (user.role?.replace('_', ' ') || 'HR Manager')}</span>
-                                <span className="user-name-display">{user.name || 'Manager'}</span>
+                                <span className="user-name-display">Manager</span>
                             </div>
                             <div className="user-profile-avatar">
                                 <FiUsers />

@@ -1,0 +1,215 @@
+.advance-tracking-page {
+    padding: 20px;
+    height: calc(100vh - 100px);
+    display: flex;
+    flex-direction: column;
+}
+
+.tracking-header {
+    margin-bottom: 24px;
+}
+
+.tracking-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+}
+
+.tracking-header p {
+    color: #7f8c8d;
+    margin: 0;
+}
+
+.tracking-container {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.advances-list {
+    width: 350px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 700;
+    color: #495057;
+}
+
+.advance-card {
+    padding: 16px;
+    border-bottom: 1px solid #f1f1f1;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.advance-card:hover {
+    background: #fcfcfc;
+}
+
+.advance-card.selected {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.emp-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.adv-amount {
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+.card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.card-details span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.repayment-detail {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.detail-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.panel-header h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.summary-pills {
+    display: flex;
+    gap: 12px;
+}
+
+.pill {
+    background: #f1f3f4;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #5f6368;
+}
+
+.schedule-table {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.schedule-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table th {
+    text-align: left;
+    padding: 12px;
+    background: #f8f9fa;
+    color: #5f6368;
+    position: sticky;
+    top: 0;
+}
+
+.schedule-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.past-row {
+    background: #fcfcfc;
+}
+
+.status-tag {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.status-tag.paid {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-tag.pending {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.tracking-notes {
+    margin-top: 24px;
+    padding: 12px;
+    background: #fdf6ed;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #856404;
+}
+
+.select-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: #bdc3c7;
+    text-align: center;
+}
+
+.select-prompt h3 {
+    color: #95a5a6;
+    margin: 16px 0 8px 0;
+}
+
+.tracking-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    font-weight: 600;
+    color: #7f8c8d;
+}

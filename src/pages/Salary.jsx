@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiPlus, FiUser, FiEdit2, FiSearch, FiCreditCard, FiArrowLeft } from 'react-icons/fi';
-import { getEmployees, createSalary, getSalaries, updateSalary } from '../services/api';
+import { getEmployees, createSalary, getSalaries, updateSalary, calculateSalary } from '../services/api';
+import './Salary.css';
 
 const Salary = () => {
     const [employees, setEmployees] = useState([]);
@@ -121,11 +122,36 @@ const Salary = () => {
         const { name, value } = e.target;
         // Handle numeric fields
         const numericFields = ['basic', 'hra', 'conveyance', 'medical', 'special', 'bonus', 'pf', 'esi', 'pt', 'tds', 'advance', 'workingDays', 'year'];
+
+        let newValue = value;
         if (numericFields.includes(name)) {
             // Allow empty string to let user delete the "0"
-            setFormData({ ...formData, [name]: value === '' ? '' : Number(value) });
-        } else {
-            setFormData({ ...formData, [name]: value });
+            newValue = value === '' ? '' : Number(value);
+        }
+
+        const updatedData = { ...formData, [name]: newValue };
+        setFormData(updatedData);
+
+        // Auto-fetch deductions if month or year changes
+        if (name === 'month' || name === 'year') {
+            fetchAutoDeductions(updatedData.month, updatedData.year);
+        }
+    };
+
+    const fetchAutoDeductions = async (month, year) => {
+        if (!selectedEmployee) return;
+        try {
+            const data = await calculateSalary(selectedEmployee.employeeId, month, year);
+            if (data.success) {
+                setFormData(prev => ({
+                    ...prev,
+                    advance: data.deductions.advance,
+                    pf: data.deductions.pf || prev.pf,
+                    esi: data.deductions.esi || prev.esi
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching auto deductions:', error);
         }
     };
 
@@ -212,15 +238,19 @@ const Salary = () => {
 
     const openNewSalaryForm = () => {
         setEditingSalary(null);
-        setFormData({
+        const initialForm = {
             month: new Date().getMonth() + 1,
             year: new Date().getFullYear(),
             paymentType: 'CASH',
             workingDays: 26,
             basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, bonus: 0,
             pf: 0, esi: 0, pt: 0, tds: 0, advance: 0
-        });
+        };
+        setFormData(initialForm);
         setShowForm(true);
+
+        // Fetch auto-calculated values for the default month/year
+        fetchAutoDeductions(initialForm.month, initialForm.year);
     };
 
     const filteredEmployees = employees.filter(emp =>
@@ -238,12 +268,12 @@ const Salary = () => {
     if (!selectedEmployee) {
         return (
             <div className="salary-page fade-in">
-                <div className="section-header !mb-8">
+                <div className="section-header mb-8">
                     <div className="section-title">
                         <FiCreditCard />
                         <h2>Salary Management</h2>
                     </div>
-                    <div className="search-container !w-80">
+                    <div className="search-container w-80">
                         <FiSearch className="search-icon" />
                         <input
                             type="text"
@@ -255,37 +285,37 @@ const Salary = () => {
                     </div>
                 </div>
 
-                <div className="card !bg-transparent !border-none !shadow-none !p-0">
+                <div className="card bg-transparent border-none shadow-none p-0">
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
                         {filteredEmployees.map(emp => (
                             <div key={emp.employeeId}
-                                className="card !p-6 !cursor-pointer flex flex-col gap-4 !transition-all hover:-translate-y-1"
+                                className="card p-6 cursor-pointer flex flex-col gap-4 transition-all hover:-translate-y-1"
                                 onClick={() => handleEmployeeSelect(emp)}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="!w-12 !h-12 !bg-primary/5 !rounded-full !flex !items-center !justify-center !text-primary">
+                                    <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center text-primary">
                                         <FiUser size={24} />
                                     </div>
                                     <div>
-                                        <h3 className="!m-0 !text-base !font-bold text-slate-900">{emp.name}</h3>
-                                        <p className="!m-0 !text-xs text-slate-500 font-medium">{emp.designation || 'Staff Member'}</p>
+                                        <h3 className="m-0 text-base font-bold text-slate-900">{emp.name}</h3>
+                                        <p className="m-0 text-xs text-slate-500 font-medium">{emp.designation || 'Staff Member'}</p>
                                     </div>
                                 </div>
 
-                                <div className="!bg-slate-50 !p-3 !rounded-lg !border !border-slate-100 flex flex-col gap-2">
+                                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex flex-col gap-2">
                                     <div className="flex items-center justify-between">
-                                        <span className="!text-[10px] !font-bold text-slate-400 !uppercase !tracking-wider">Employee ID</span>
-                                        <span className="!text-[11px] !font-bold !bg-white !px-2 !py-0.5 !rounded !border !border-slate-200 !max-w-[140px] !truncate" title={emp.employeeId}>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Employee ID</span>
+                                        <span className="text-[11px] font-bold bg-white px-2 py-0.5 rounded border border-slate-200 max-w-[140px] truncate" title={emp.employeeId}>
                                             {emp.employeeId}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="!text-[10px] !font-bold text-slate-400 !uppercase !tracking-wider">Location</span>
-                                        <span className="badge badge-secondary !text-[11px] !font-bold">{emp.branchId || 'N/A'}</span>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Location</span>
+                                        <span className="badge badge-secondary text-[11px] font-bold">{emp.branchId || 'N/A'}</span>
                                     </div>
                                 </div>
 
-                                <button className="btn btn-secondary !w-full !mt-2">
+                                <button className="btn btn-secondary w-full mt-2">
                                     Manage Salary
                                 </button>
                             </div>

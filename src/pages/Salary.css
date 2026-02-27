@@ -1,0 +1,249 @@
+/* Salary Page Specific Styles */
+.salary-page {
+    padding-bottom: 40px;
+}
+
+/* Section Header Overrides */
+.salary-page .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+/* Flex Utilities */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+/* Spacing Utilities */
+.gap-2 {
+    gap: 8px !important;
+}
+
+.gap-4 {
+    gap: 16px !important;
+}
+
+.p-0 {
+    padding: 0 !important;
+}
+
+.p-3 {
+    padding: 12px !important;
+}
+
+.p-6 {
+    padding: 24px !important;
+}
+
+.px-2 {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+.py-0\.5 {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+
+.mt-2 {
+    margin-top: 8px !important;
+}
+
+.mt-0 {
+    margin-top: 0 !important;
+}
+
+.mb-4 {
+    margin-bottom: 16px !important;
+}
+
+.mb-8 {
+    margin-bottom: 32px !important;
+}
+
+.mb-10 {
+    margin-bottom: 40px !important;
+}
+
+/* Sizing Utilities */
+.w-full {
+    width: 100% !important;
+}
+
+.w-12 {
+    width: 48px !important;
+}
+
+.h-12 {
+    height: 48px !important;
+}
+
+.w-80 {
+    width: 320px !important;
+}
+
+.max-w-\[140px\] {
+    max-width: 140px !important;
+}
+
+/* Typography Utilities */
+.text-\[10px\] {
+    font-size: 10px !important;
+}
+
+.text-\[11px\] {
+    font-size: 11px !important;
+}
+
+.text-xs {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+}
+
+.text-sm {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+.text-base {
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+}
+
+/* Badge and Truncation */
+.badge {
+    max-width: 160px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+    text-align: center !important;
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-slate-900 {
+    color: #0f172a;
+}
+
+.text-slate-500 {
+    color: #64748b;
+}
+
+.text-slate-400 {
+    color: #94a3b8;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+.tracking-wider {
+    letter-spacing: 0.05em;
+}
+
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Component specifics */
+.bg-primary\/5 {
+    background-color: rgba(239, 65, 54, 0.05);
+}
+
+.bg-slate-50 {
+    background-color: #f8fafc;
+}
+
+.bg-white {
+    background-color: #ffffff !important;
+}
+
+.rounded {
+    border-radius: 4px !important;
+}
+
+.rounded-full {
+    border-radius: 9999px !important;
+}
+
+.rounded-lg {
+    border-radius: 12px !important;
+}
+
+.border {
+    border: 1px solid var(--border) !important;
+}
+
+.border-none {
+    border: none !important;
+}
+
+.border-slate-100 {
+    border-color: #f1f5f9 !important;
+}
+
+.border-slate-200 {
+    border-color: #e2e8f0 !important;
+}
+
+.shadow-none {
+    box-shadow: none !important;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.transition-all {
+    transition: all 0.2s ease-in-out;
+}
+
+.hover\:-translate-y-1:hover {
+    transform: translateY(-4px);
+}
+
+/* Overlap Fixes */
+.salary-page .card {
+    position: relative;
+    overflow: visible;
+}
+
+.salary-page h3,
+.salary-page p {
+    margin: 0;
+}
+
+.salary-page .badge {
+    white-space: nowrap;
+}

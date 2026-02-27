@@ -123,6 +123,13 @@ export const updateSalary = async (salaryId, data) => {
     return response.data;
 };
 
+export const calculateSalary = async (employeeId, month, year) => {
+    const response = await api.get(`/api/salary/calculate/${employeeId}`, {
+        params: { month, year }
+    });
+    return response.data;
+};
+
 // --- Requests ---
 export const getAllRequests = async (status = null, branchId = null) => {
     let url = '/api/requests';
@@ -144,10 +151,14 @@ export const getRequestsByEmployee = async (employeeId) => {
 };
 
 export const updateRequestStatus = async (requestId, status, rejectionReason = null) => {
-    // hrId should be handled by auth middleware or passed here if we had logged in HR user context
+    // Determine actionBy based on user context
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const actionBy = `${user.role || 'HR'}:${user.name || 'HR Admin'}`;
+
     const response = await api.put(`/api/requests/${requestId}/status`, {
         status,
-        hrId: 'hr-admin-1', // Hardcoded for now as per simple auth status
+        hrId: 'hr-admin-1', // Fallback for old records
+        actionBy,
         rejectionReason
     });
     return response.data;

@@ -12,7 +12,8 @@ import KioskAttendance from './pages/KioskAttendance';
 import EmployeeRules from './pages/EmployeeRules';
 import AttendanceView from './pages/AttendanceView';
 import LiveTracking from './pages/LiveTracking';
-import './components/Layout.css'; // Load global CSS
+import AdvanceTracking from './pages/AdvanceTracking';
+import './components/Layout.css';
 
 import Login from './pages/Login'; // Keep existing login import if it was there, assumed line 16
 
@@ -35,6 +36,7 @@ function App() {
           <Route path="employee/edit/:id" element={<EmployeeForm />} />
           <Route path="salary" element={<Salary />} />
           <Route path="requests" element={<Requests />} />
+          <Route path="advance-tracking" element={<AdvanceTracking />} />
           <Route path="tracking" element={<LiveTracking />} />
           <Route path="chat" element={<ChatGroups />} />
           <Route path="attendance-report" element={<AttendanceReport />} />

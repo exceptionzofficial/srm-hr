@@ -134,10 +134,16 @@ const Requests = () => {
 
                             <div className="detail-box">
                                 {req.type === 'ADVANCE' && (
-                                    <div className="detail-row">
-                                        <span className="label">Amount</span>
-                                        <span className="value">₹{req.data?.amount}</span>
-                                    </div>
+                                    <>
+                                        <div className="detail-row">
+                                            <span className="label">Amount</span>
+                                            <span className="value">₹{req.data?.amount}</span>
+                                        </div>
+                                        <div className="detail-row">
+                                            <span className="label">EMI Plan</span>
+                                            <span className="value">{req.data?.emiMonths} Months</span>
+                                        </div>
+                                    </>
                                 )}
                                 {(req.type === 'LEAVE' || req.type === 'PERMISSION') && (
                                     <>
