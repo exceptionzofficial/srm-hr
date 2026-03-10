@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAttendanceReport, getBranchById } from '../services/api';
+import { getAttendanceReport, getBranches, getBranchById } from '../services/api';
 import { FiSearch } from 'react-icons/fi';
 import './AttendanceReport.css';
 
@@ -16,6 +16,22 @@ const AttendanceReport = () => {
     const [loading, setLoading] = useState(false);
     const [fetched, setFetched] = useState(false);
     const [branchDetails, setBranchDetails] = useState(null);
+    const [branches, setBranches] = useState([]);
+    const [selectedBranch, setSelectedBranch] = useState('');
+
+    useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+                const res = await getBranches();
+                if (res && res.branches) {
+                    setBranches(res.branches);
+                }
+            } catch (error) {
+                console.error("Failed to fetch branches", error);
+            }
+        };
+        fetchBranches();
+    }, []);
 
     // Auto-set dates when type changes
     useEffect(() => {
@@ -87,6 +103,8 @@ const AttendanceReport = () => {
             // Add branchId to params if isolated
             if (queryBranchId) {
                 params.branchId = queryBranchId;
+            } else if (selectedBranch) {
+                params.branchId = selectedBranch;
             }
 
             console.log("Generating Report with params:", params);
@@ -145,15 +163,18 @@ const AttendanceReport = () => {
 
             if (isRange) {
                 // Summary CSV
-                const headers = ['Employee ID', 'Name', 'Department', 'Total Days', 'Present', 'Absent', 'Late In', 'Early Out', 'Leave', 'Permission', 'Travel', 'Half Day'];
+                const headers = ['Employee ID', 'Name', 'Branch', 'Department', 'Total Days', 'Present', 'Absent', 'Late In', 'Early Out', 'Leave', 'Permission', 'Travel', 'Half Day'];
                 const rows = report.map(row => {
                     const stats = row.stats;
                     const name = `"${(row.name || '').replace(/"/g, '""')}"`;
+                    const branchName = branches.find(b => b.branchId === row.branchId)?.name || 'Unassigned';
+                    const branchStr = `"${branchName.replace(/"/g, '""')}"`;
                     const dept = (row.department || '').replace(/,/g, ' ');
 
                     return [
                         row.employeeId,
                         name,
+                        branchStr,
                         dept,
                         stats.totalDays,
                         stats.present,
@@ -169,16 +190,19 @@ const AttendanceReport = () => {
                 csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
             } else {
                 // Daily CSV (Existing Logic)
-                const headers = ['Employee ID', 'Name', 'Department', 'In Time', 'Out Time', 'Status', 'Remarks'];
+                const headers = ['Employee ID', 'Name', 'Branch', 'Department', 'In Time', 'Out Time', 'Status', 'Remarks'];
                 const rows = report.map(row => {
                     const statusStr = Array.isArray(row.status) ? row.status.join(' | ') : (row.status || '');
                     const name = `"${(row.name || '').replace(/"/g, '""')}"`;
+                    const branchName = branches.find(b => b.branchId === row.branchId)?.name || 'Unassigned';
+                    const branchStr = `"${branchName.replace(/"/g, '""')}"`;
                     const remarks = `"${(row.remarks || '').replace(/"/g, '""')}"`;
                     const dept = (row.department || '').replace(/,/g, ' ');
 
                     return [
                         row.employeeId,
                         name,
+                        branchStr,
                         dept,
                         row.times?.in || '-',
                         row.times?.out || '-',
@@ -247,6 +271,21 @@ const AttendanceReport = () => {
                         <option value="weekly">Weekly Summary</option>
                         <option value="monthly">Monthly Summary</option>
                         <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div className="control-group">
+                    <label>Assigned Branch:</label>
+                    <select
+                        value={selectedBranch}
+                        onChange={(e) => setSelectedBranch(e.target.value)}
+                        className="type-select"
+                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
+                    >
+                        <option value="">All Branches</option>
+                        {branches.map(b => (
+                            <option key={b.branchId} value={b.branchId}>{b.name}</option>
+                        ))}
                     </select>
                 </div>
 
@@ -362,6 +401,7 @@ const AttendanceReport = () => {
                                 <thead>
                                     <tr>
                                         <th>Employee</th>
+                                        <th>Branch</th>
                                         <th>Department</th>
                                         <th>In Time</th>
                                         <th>Out Time</th>
@@ -378,6 +418,7 @@ const AttendanceReport = () => {
                                                     <div className="emp-name">{row.name}</div>
                                                     <div className="emp-id">{row.employeeId}</div>
                                                 </td>
+                                                <td>{branches.find(b => b.branchId === row.branchId)?.name || 'Unassigned'}</td>
                                                 <td>{row.department || '-'}</td>
                                                 <td>{row.times?.in || '-'}</td>
                                                 <td>{row.times?.out || '-'}</td>
@@ -399,6 +440,7 @@ const AttendanceReport = () => {
                                 <thead>
                                     <tr>
                                         <th>Employee</th>
+                                        <th>Branch</th>
                                         <th>Present</th>
                                         <th>Absent</th>
                                         <th>Late In</th>
@@ -416,6 +458,7 @@ const AttendanceReport = () => {
                                                     <div className="emp-name">{row.name}</div>
                                                     <div className="emp-id">{row.employeeId}</div>
                                                 </td>
+                                                <td>{branches.find(b => b.branchId === row.branchId)?.name || 'Unassigned'}</td>
                                                 <td style={{ color: '#047857', fontWeight: 'bold' }}>{row.stats?.present || 0}</td>
                                                 <td style={{ color: '#b91c1c', fontWeight: 'bold' }}>{row.stats?.absent || 0}</td>
                                                 <td style={{ color: '#c2410c' }}>{row.stats?.lateIn || 0}</td>

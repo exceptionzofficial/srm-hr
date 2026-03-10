@@ -25,6 +25,8 @@ const ChatWindow = ({ group, currentUser }) => {
     // Task State
     const [showTaskModal, setShowTaskModal] = useState(false);
     const [taskTitle, setTaskTitle] = useState('');
+    const [taskDescription, setTaskDescription] = useState('');
+    const [taskAssignee, setTaskAssignee] = useState('all');
     const [taskDeadline, setTaskDeadline] = useState('');
 
     // Add Member State
@@ -176,6 +178,8 @@ const ChatWindow = ({ group, currentUser }) => {
         try {
             const taskData = {
                 title: taskTitle,
+                description: taskDescription,
+                assigneeId: taskAssignee,
                 deadline: taskDeadline,
                 status: 'pending',
                 createdBy: currentUser.id,
@@ -196,6 +200,8 @@ const ChatWindow = ({ group, currentUser }) => {
 
             setTasks(updatedTasks);
             setTaskTitle('');
+            setTaskDescription('');
+            setTaskAssignee('all');
             setTaskDeadline('');
             setShowTaskModal(false);
         } catch (error) {
@@ -601,8 +607,9 @@ const ChatWindow = ({ group, currentUser }) => {
                                             </div>
                                             <div className="task-details">
                                                 <h4>{task.title}</h4>
+                                                {task.description && <p className="task-description" style={{ fontSize: '13px', color: '#666', marginTop: '4px', marginBottom: '8px', lineHeight: '1.4' }}>{task.description}</p>}
                                                 <div className="task-meta">
-                                                    <span><FiUser /> {employees.find(e => e.employeeId === task.assigneeId)?.name || task.assigneeId || 'Unassigned'}</span>
+                                                    <span><FiUser /> {employees.find(e => e.employeeId === task.assigneeId)?.name || task.assigneeId || 'Assigned to all in the group'}</span>
                                                     <span><FiClock /> {task.deadline}</span>
                                                 </div>
                                                 {task.status === 'completed' && <span className="completed-label">✓ Completed</span>}
@@ -750,6 +757,28 @@ const ChatWindow = ({ group, currentUser }) => {
                                     placeholder="What needs to be done?"
                                     required
                                 />
+                            </div>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea
+                                    value={taskDescription}
+                                    onChange={(e) => setTaskDescription(e.target.value)}
+                                    placeholder="Detailed description of the task..."
+                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Assign To</label>
+                                <select
+                                    value={taskAssignee}
+                                    onChange={(e) => setTaskAssignee(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                                >
+                                    <option value="all">All Team Members</option>
+                                    {getResolvedMembers().map(m => (
+                                        <option key={m.id} value={m.id}>{m.name} {m.designation ? `(${m.designation})` : ''}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label>Deadline</label>
