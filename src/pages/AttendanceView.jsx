@@ -37,6 +37,19 @@ const AttendanceView = () => {
         setLoading(true);
     };
 
+    const formatTime = (isoString) => {
+        if (!isoString || isoString === '-' || isoString === 'Travel Only') return isoString;
+        try {
+            return new Date(isoString).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        } catch (e) {
+            return isoString;
+        }
+    };
+
     const loadData = async () => {
         try {
             const [emp, cal, reqs] = await Promise.all([
@@ -276,7 +289,7 @@ const AttendanceView = () => {
                                                 </div>
                                                 <div className="time-info">
                                                     <span className="label">Check In</span>
-                                                    <span className="value">{selectedDay.details.checkIn}</span>
+                                                    <span className="value">{formatTime(selectedDay.details.checkIn)}</span>
                                                 </div>
                                             </div>
                                             <div className="time-box">
@@ -285,7 +298,7 @@ const AttendanceView = () => {
                                                 </div>
                                                 <div className="time-info">
                                                     <span className="label">Check Out</span>
-                                                    <span className="value">{selectedDay.details.checkOut}</span>
+                                                    <span className="value">{formatTime(selectedDay.details.checkOut)}</span>
                                                 </div>
                                             </div>
                                         </div>

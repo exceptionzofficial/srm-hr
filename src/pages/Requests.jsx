@@ -12,6 +12,26 @@ const Requests = () => {
         loadRequests();
     }, [filter]);
 
+    const calculateTAT = (createdAt, updatedAt, status) => {
+        if (!['APPROVED', 'REJECTED'].includes(status)) return null;
+        if (!createdAt || !updatedAt) return null;
+
+        const start = new Date(createdAt);
+        const end = new Date(updatedAt);
+        const diffMs = end - start;
+        
+        // If updatedAt is somehow before createdAt, treating as instant
+        if (diffMs <= 0) return "1m";
+
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (diffHrs > 0) {
+            return `${diffHrs}h ${diffMins > 0 ? `${diffMins}m` : ''}`;
+        }
+        return `${Math.max(1, diffMins)}m`;
+    };
+
     const loadRequests = async () => {
         setLoading(true);
         try {
@@ -163,23 +183,29 @@ const Requests = () => {
                                         )}
                                     </>
                                 )}
-                                {req.type === 'BRANCH_TRAVEL' && (
-                                    <>
-                                        <div className="detail-row">
-                                            <span className="label">Date</span>
-                                            <span className="value">{req.data?.date}</span>
-                                        </div>
-                                        <div className="detail-row">
-                                            <span className="label">Destination</span>
-                                            <span className="value">{req.data?.destination}</span>
-                                        </div>
-                                        <div className="detail-row">
-                                            <span className="label">Reason</span>
-                                            <span className="value">{req.data?.reason}</span>
-                                        </div>
-                                    </>
+                                    {req.type === 'BRANCH_TRAVEL' && (
+                                        <>
+                                            <div className="detail-row">
+                                                <span className="label">Date</span>
+                                                <span className="value">{req.data?.date}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="label">Destination</span>
+                                                <span className="value">{req.data?.destination}</span>
+                                            </div>
+                                            <div className="detail-row">
+                                                <span className="label">Reason</span>
+                                                <span className="value">{req.data?.reason}</span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                {calculateTAT(req.createdAt, req.updatedAt, req.status) && (
+                                    <div className="tat-badge">
+                                        <FiClock /> TAT: {calculateTAT(req.createdAt, req.updatedAt, req.status)}
+                                    </div>
                                 )}
-                            </div>
 
                             {['PENDING', 'PENDING_MANAGER', 'PENDING_HR'].includes(req.status) && (
                                 <div className="action-buttons">

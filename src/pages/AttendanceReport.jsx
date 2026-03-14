@@ -236,6 +236,19 @@ const AttendanceReport = () => {
         return `${h}h ${m}m`;
     };
 
+    const formatTime = (isoString) => {
+        if (!isoString || isoString === '-' || isoString === 'Travel Start' || isoString === 'Travel End') return isoString;
+        try {
+            return new Date(isoString).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        } catch (e) {
+            return isoString;
+        }
+    };
+
     const getStatusBadge = (statusList, color) => {
         if (!statusList) return null;
         return (
@@ -401,11 +414,11 @@ const AttendanceReport = () => {
                                 <thead>
                                     <tr>
                                         <th>Employee</th>
-                                        <th>Branch</th>
+                                        <th>Branches</th>
                                         <th>Department</th>
                                         <th>In Time</th>
                                         <th>Out Time</th>
-                                        <th>Duration</th>
+                                        <th>Total Work</th>
                                         <th>Status</th>
                                         <th>Remarks</th>
                                     </tr>
@@ -418,11 +431,24 @@ const AttendanceReport = () => {
                                                     <div className="emp-name">{row.name}</div>
                                                     <div className="emp-id">{row.employeeId}</div>
                                                 </td>
-                                                <td>{branches.find(b => b.branchId === row.branchId)?.name || 'Unassigned'}</td>
+                                                <td>
+                                                    {row.visitedBranches && row.visitedBranches.length > 0 ? (
+                                                        <div className="branch-list">
+                                                            {row.visitedBranches.map((bid, i) => (
+                                                                <span key={bid} className="branch-tag">
+                                                                    {branches.find(b => b.branchId === bid)?.name || bid}
+                                                                    {i < row.visitedBranches.length - 1 ? ', ' : ''}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        branches.find(b => b.branchId === row.branchId)?.name || 'Unassigned'
+                                                    )}
+                                                </td>
                                                 <td>{row.department || '-'}</td>
-                                                <td>{row.times?.in || '-'}</td>
-                                                <td>{row.times?.out || '-'}</td>
-                                                <td style={{ fontWeight: '500', color: '#1e293b' }}>
+                                                <td>{formatTime(row.times?.in)}</td>
+                                                <td>{formatTime(row.times?.out)}</td>
+                                                <td style={{ fontWeight: '700', color: 'var(--primary)' }}>
                                                     {formatMinutes(row.totalWorkMinutes)}
                                                 </td>
                                                 <td>{getStatusBadge(row.status, row.color)}</td>

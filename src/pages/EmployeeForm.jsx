@@ -209,12 +209,22 @@ const EmployeeForm = () => {
         setLoading(true);
         try {
             // Validation Checks
-            if (formData.personalEmail && !verification.emailVerified) {
+            if (!formData.personalEmail) {
+                alert('Personal Email is mandatory.');
+                setLoading(false);
+                return;
+            }
+            if (!verification.emailVerified) {
                 alert('Please verify your Personal Email before submitting.');
                 setLoading(false);
                 return;
             }
-            if (formData.personalMobile && !verification.mobileVerified) {
+            if (!formData.personalMobile) {
+                alert('Personal Mobile is mandatory.');
+                setLoading(false);
+                return;
+            }
+            if (!verification.mobileVerified) {
                 alert('Please verify your Personal Mobile before submitting.');
                 setLoading(false);
                 return;
@@ -310,10 +320,50 @@ const EmployeeForm = () => {
         }
     };
 
-    const handleSendEmailOTP = async () => { if (!formData.personalEmail) return alert('Enter email'); await sendOTP(formData.personalEmail); setVerification(p => ({ ...p, emailOtpSent: true })); alert('OTP Sent'); };
-    const handleVerifyEmailOTP = async () => { if (!verification.emailOtp) return alert('Enter OTP'); try { await verifyOTP(formData.personalEmail, verification.emailOtp); setVerification(p => ({ ...p, emailVerified: true })); alert('Verified!'); } catch (e) { alert('Invalid OTP'); } };
-    const handleSendMobileOTP = async () => { if (!formData.personalMobile) return alert('Enter mobile'); await sendSMSOTP(formData.personalMobile); setVerification(p => ({ ...p, mobileOtpSent: true })); alert('OTP Sent'); };
-    const handleVerifyMobileOTP = async () => { if (!verification.mobileOtp) return alert('Enter OTP'); try { await verifySMSOTP(formData.personalMobile, verification.mobileOtp); setVerification(p => ({ ...p, mobileVerified: true })); alert('Verified!'); } catch (e) { alert('Invalid OTP'); } };
+    const handleSendEmailOTP = async () => {
+        if (!formData.personalEmail) return alert('Enter email');
+        try {
+            await sendOTP(formData.personalEmail);
+            setVerification(p => ({ ...p, emailOtpSent: true }));
+            alert('OTP Sent to ' + formData.personalEmail);
+        } catch (err) {
+            console.error('OTP Send Error:', err);
+            alert('Failed to send OTP: ' + (err.response?.data?.message || err.message));
+        }
+    };
+
+    const handleVerifyEmailOTP = async () => {
+        if (!verification.emailOtp) return alert('Enter OTP');
+        try {
+            await verifyOTP(formData.personalEmail, verification.emailOtp);
+            setVerification(p => ({ ...p, emailVerified: true }));
+            alert('Email Verified successfully!');
+        } catch (e) {
+            alert('Invalid OTP. Please check and try again.');
+        }
+    };
+
+    const handleSendMobileOTP = async () => {
+        if (!formData.personalMobile) return alert('Enter mobile');
+        try {
+            await sendSMSOTP(formData.personalMobile);
+            setVerification(p => ({ ...p, mobileOtpSent: true }));
+            alert('OTP Sent to mobile');
+        } catch (err) {
+            alert('Failed to send SMS OTP: ' + (err.response?.data?.message || err.message));
+        }
+    };
+
+    const handleVerifyMobileOTP = async () => {
+        if (!verification.mobileOtp) return alert('Enter OTP');
+        try {
+            await verifySMSOTP(formData.personalMobile, verification.mobileOtp);
+            setVerification(p => ({ ...p, mobileVerified: true }));
+            alert('Mobile Verified successfully!');
+        } catch (e) {
+            alert('Invalid OTP. Please check and try again.');
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto p-6">
@@ -456,7 +506,7 @@ const EmployeeForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="col-span-full"><h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><FiUsers className="text-pink-500" /> Family & Personal Details</h3></div>
                         <div className="form-group">
-                            <label className="label">Personal Mobile</label>
+                            <label className="label">Personal Mobile *</label>
                             <div className="flex flex-col gap-2">
                                 <div className="flex gap-2">
                                     <input type="text" className={`input flex-1 ${verification.mobileVerified ? 'bg-green-50' : ''}`} value={formData.personalMobile} onChange={e => handleChange('personalMobile', e.target.value)} disabled={verification.mobileVerified} />
@@ -472,7 +522,7 @@ const EmployeeForm = () => {
                             </div>
                         </div>
                         <div className="form-group">
-                            <label className="label">Personal Email</label>
+                            <label className="label">Personal Email *</label>
                             <div className="flex flex-col gap-2">
                                 <div className="flex gap-2">
                                     <input type="text" className={`input flex-1 ${verification.emailVerified ? 'bg-green-50' : ''}`} value={formData.personalEmail} onChange={e => handleChange('personalEmail', e.target.value)} disabled={verification.emailVerified} />
@@ -550,7 +600,19 @@ const EmployeeForm = () => {
 
                     {currentStep < steps.length ? (
                         <button
-                            onClick={() => setCurrentStep(c => Math.min(steps.length, c + 1))}
+                            onClick={() => {
+                                if (currentStep === 7) {
+                                    if (!formData.personalEmail || !verification.emailVerified) {
+                                        alert('Please verify Personal Email before proceeding.');
+                                        return;
+                                    }
+                                    if (!formData.personalMobile || !verification.mobileVerified) {
+                                        alert('Please verify Personal Mobile before proceeding.');
+                                        return;
+                                    }
+                                }
+                                setCurrentStep(c => Math.min(steps.length, c + 1));
+                            }}
                             style={{
                                 padding: '10px 24px',
                                 borderRadius: '12px',

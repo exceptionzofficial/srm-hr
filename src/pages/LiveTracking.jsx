@@ -11,10 +11,12 @@ const LiveTracking = () => {
     const [onlineCount, setOnlineCount] = useState(0);
     const [totalCount, setTotalCount] = useState(0);
     const [mapLoaded, setMapLoaded] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const mapRef = useRef(null);
     const googleMapRef = useRef(null);
     const markersRef = useRef({});
+    const infoWindowsRef = useRef({});
     const GOOGLE_MAPS_API_KEY = 'AIzaSy' + 'DOTCfq7Duq1KGuNKFVU1KPtEqmJVPNU1Y';
 
     const loadData = async () => {
@@ -34,8 +36,8 @@ const LiveTracking = () => {
 
             const data = await getAllEmployeeLocations(queryBranchId);
             if (data.success) {
-                // Filter to only show employees who are actively traveling
-                const travelingEmployees = data.employees.filter(emp => emp.isTracking);
+                // Filter to only show employees who are actively traveling (have an active trip/travel session)
+                const travelingEmployees = data.employees.filter(emp => emp.tripDetails);
 
                 setEmployees(travelingEmployees);
                 setActiveCount(travelingEmployees.length);
@@ -118,49 +120,69 @@ const LiveTracking = () => {
         if (!window.google || !googleMapRef.current) return;
         const map = googleMapRef.current;
 
-        employeesData.forEach(emp => {
-            if (emp.lastLocation && emp.lastLocation.latitude) {
-                const position = {
-                    lat: parseFloat(emp.lastLocation.latitude),
-                    lng: parseFloat(emp.lastLocation.longitude)
-                };
-
-                if (markersRef.current[emp.employeeId]) {
-                    markersRef.current[emp.employeeId].setPosition(position);
-                } else {
-                    const marker = new window.google.maps.Marker({
-                        position: position,
-                        map: map,
-                        title: emp.name,
-                        icon: {
-                            path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
-                            fillColor: '#EF4136',
-                            fillOpacity: 1,
-                            strokeWeight: 2,
-                            strokeColor: '#ffffff',
-                            scale: 2,
-                            anchor: new window.google.maps.Point(12, 22)
-                        }
-                    });
-
-                    const infoWindow = new window.google.maps.InfoWindow({
-                        content: `<div style="padding: 10px; color: #333; font-family: Inter, sans-serif;">
-                            <h4 style="margin: 0 0 5px 0; color: #EF4136;">${emp.name}</h4>
-                            <p style="margin: 0; font-size: 13px;"><b>Dept:</b> ${emp.department}</p>
-                            ${emp.tripDetails ? `<p style="margin: 5px 0 0 0; font-size: 13px;"><b>To:</b> ${emp.tripDetails.destination}</p>` : ''}
-                            <p style="margin: 5px 0 0 0; font-weight: bold; color: #3b82f6;">Live Tracking</p>
-                        </div>`
-                    });
-
-                    marker.addListener('click', () => {
-                        infoWindow.open(map, marker);
-                    });
-
-                    markersRef.current[emp.employeeId] = marker;
+        // Clear existing markers that are NOT in the new data
+        const currentEmpIds = employeesData.map(e => e.employeeId);
+        Object.keys(markersRef.current).forEach(id => {
+            if (!currentEmpIds.includes(id)) {
+                    markersRef.current[id].setMap(null);
+                    delete markersRef.current[id];
                 }
-            }
-        });
-    };
+                if (infoWindowsRef.current[id]) {
+                    delete infoWindowsRef.current[id];
+                }
+            });
+
+            employeesData.forEach(emp => {
+                if (emp.lastLocation && emp.lastLocation.latitude) {
+                    const position = {
+                        lat: parseFloat(emp.lastLocation.latitude),
+                        lng: parseFloat(emp.lastLocation.longitude)
+                    };
+
+                    const infoWindowContent = `<div style="padding: 10px; color: #333; font-family: Inter, sans-serif; min-width: 150px;">
+                        <h4 style="margin: 0 0 5px 0; color: #EF4136; font-size: 14px;">${emp.name}</h4>
+                        <p style="margin: 0; font-size: 12px;"><b>Dept:</b> ${emp.department}</p>
+                        ${emp.tripDetails ? `<p style="margin: 5px 0 0 0; font-size: 12px;"><b>To:</b> ${emp.tripDetails.destination}</p>` : ''}
+                        <p style="margin: 8px 0 0 0; font-weight: bold; color: #3b82f6; font-size: 11px; text-transform: uppercase;">Live Tracking</p>
+                    </div>`;
+
+                    if (markersRef.current[emp.employeeId]) {
+                        markersRef.current[emp.employeeId].setPosition(position);
+                        // Update existing info window content
+                        if (infoWindowsRef.current[emp.employeeId]) {
+                            infoWindowsRef.current[emp.employeeId].setContent(infoWindowContent);
+                        }
+                    } else {
+                        const marker = new window.google.maps.Marker({
+                            position: position,
+                            map: map,
+                            title: emp.name,
+                            icon: {
+                                path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                                fillColor: '#EF4136',
+                                fillOpacity: 1,
+                                strokeWeight: 2,
+                                strokeColor: '#ffffff',
+                                scale: 2,
+                                anchor: new window.google.maps.Point(12, 22)
+                            }
+                        });
+
+                        const infoWindow = new window.google.maps.InfoWindow({
+                            content: infoWindowContent
+                        });
+
+                        marker.addListener('click', () => {
+                            // Close other info windows if needed? Google Maps usually does this or we can manage it.
+                            infoWindow.open(map, marker);
+                        });
+
+                        markersRef.current[emp.employeeId] = marker;
+                        infoWindowsRef.current[emp.employeeId] = infoWindow;
+                    }
+                }
+            });
+        };
 
     const getStatusClass = (emp) => {
         if (emp.isTracking) return 'tracking';
@@ -176,8 +198,16 @@ const LiveTracking = () => {
 
     const formatTime = (isoString) => {
         if (!isoString) return 'Unknown';
-        const date = new Date(isoString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        try {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        } catch (e) {
+            return 'Unknown';
+        }
     };
 
     const formatDistance = (meters) => {
@@ -190,65 +220,76 @@ const LiveTracking = () => {
 
     return (
         <div className="live-tracking-page">
-            <div className="page-header tracking-header">
-                <div>
-                    <h2 className="page-title">Live Field Tracking</h2>
-                    <p className="text-muted">Real-time location updates for field staff</p>
-                </div>
-                <button className="refresh-btn" onClick={loadData} disabled={loading}>
-                    <FiRefreshCw className={loading ? 'spin' : ''} />
-                    Refresh
-                </button>
-            </div>
-
-            {/* Compact Header handled by layout */}
-
             {loading && employees.length === 0 ? (
                 <div className="loading-state">Loading location data...</div>
             ) : (
                 <div className="dashboard-layout">
                     <div className="sidebar-container">
-                        <div className="stats-row">
-                            <div className="stat-pill">
-                                <span className="pill-dot" style={{ backgroundColor: '#3b82f6' }}></span>
-                                <span className="pill-val">{activeCount}</span>
-                                <span className="pill-label">Live</span>
+                        <div className="sidebar-header">
+                            <div>
+                                <h2 className="sidebar-title">Live Tracking</h2>
+                                <p className="sidebar-subtitle">Field staff updates</p>
                             </div>
-                            <div className="stat-pill">
-                                <span className="pill-dot" style={{ backgroundColor: '#10b981' }}></span>
-                                <span className="pill-val">{onlineCount}</span>
-                                <span className="pill-label">Online</span>
-                            </div>
-                            <div className="stat-pill">
-                                <span className="pill-dot" style={{ backgroundColor: '#94a3b8' }}></span>
-                                <span className="pill-val">{totalCount}</span>
-                                <span className="pill-label">Total</span>
-                            </div>
+                            <button className="sidebar-refresh-btn" onClick={loadData} disabled={loading}>
+                                <FiRefreshCw className={loading ? 'spin' : ''} />
+                            </button>
+                        </div>
+
+                        <div className="search-bar-container">
+                            <FiMapPin className="search-icon" />
+                            <input
+                                type="text"
+                                placeholder="Search employee or department..."
+                                className="tracking-search-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
 
                         <div className="employee-list-scroll">
-                            {employees.map(emp => (
-                                <div
-                                    key={emp.employeeId}
-                                    className={`employee-list-card ${getStatusClass(emp)}`}
-                                    onClick={() => {
-                                        if (googleMapRef.current && emp.lastLocation) {
-                                            const pos = {
-                                                lat: parseFloat(emp.lastLocation.latitude),
-                                                lng: parseFloat(emp.lastLocation.longitude)
-                                            };
-                                            googleMapRef.current.setCenter(pos);
-                                            googleMapRef.current.setZoom(16);
+                            {employees
+                                .filter(emp =>
+                                    emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    emp.department.toLowerCase().includes(searchTerm.toLowerCase())
+                                )
+                                .map(emp => (
+                                    <div
+                                        key={emp.employeeId}
+                                        className={`employee-list-card ${getStatusClass(emp)}`}
+                                        onClick={() => {
+                                            if (googleMapRef.current && emp.lastLocation) {
+                                                const lat = parseFloat(emp.lastLocation.latitude);
+                                                const lng = parseFloat(emp.lastLocation.longitude);
+                                                
+                                                if (isNaN(lat) || isNaN(lng)) {
+                                                    console.error('Invalid location coordinates', emp.lastLocation);
+                                                    return;
+                                                }
 
-                                            // Open InfoWindow if marker exists
-                                            // Note: In a real app we'd trigger the click event on the marker
-                                            // or store infoWindows in a ref map too.
-                                        }
-                                    }}
-                                >
+                                                const pos = { lat, lng };
+                                                const map = googleMapRef.current;
+                                                
+                                                // Smooth animation and zoom
+                                                map.panTo(pos);
+                                                map.setZoom(16);
+
+                                                // Open InfoWindow programmatically
+                                                if (infoWindowsRef.current[emp.employeeId] && markersRef.current[emp.employeeId]) {
+                                                    // Close all others first
+                                                    Object.values(infoWindowsRef.current).forEach(iw => iw.close());
+                                                    infoWindowsRef.current[emp.employeeId].open(map, markersRef.current[emp.employeeId]);
+                                                }
+                                            } else {
+                                                console.warn('No location available for', emp.name);
+                                            }
+                                        }}
+                                    >
                                     <div className="list-card-header">
                                         <div className="list-card-main">
-                                            <h4 className="list-emp-name">{emp.name}</h4>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <h4 className="list-emp-name">{emp.name}</h4>
+                                                {emp.tripDetails && <span className="travel-badge">TRAVEL</span>}
+                                            </div>
                                             <p className="list-emp-dept">{emp.department}</p>
                                         </div>
                                         <span className={`list-status-dot ${getStatusClass(emp)}`}></span>

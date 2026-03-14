@@ -13,6 +13,7 @@ import EmployeeRules from './pages/EmployeeRules';
 import AttendanceView from './pages/AttendanceView';
 import LiveTracking from './pages/LiveTracking';
 import AdvanceTracking from './pages/AdvanceTracking';
+import WorkTimings from './pages/WorkTimings';
 import './components/Layout.css';
 
 import Login from './pages/Login'; // Keep existing login import if it was there, assumed line 16
@@ -38,6 +39,7 @@ function App() {
           <Route path="requests" element={<Requests />} />
           <Route path="advance-tracking" element={<AdvanceTracking />} />
           <Route path="tracking" element={<LiveTracking />} />
+          <Route path="work-timings" element={<WorkTimings />} />
           <Route path="chat" element={<ChatGroups />} />
           <Route path="attendance-report" element={<AttendanceReport />} />
           <Route path="attendance/mobile" element={<MobileAttendance />} />

@@ -271,6 +271,11 @@ export const getWorkSummary = async (employeeId, date) => {
     return response.data;
 };
 
+export const getBranchWorkSummary = async (employeeId, date) => {
+    const response = await api.get(`/api/location/branch-work-summary/${employeeId}?date=${date}`);
+    return response.data;
+};
+
 export const startTravel = async (employeeId, requestId, location) => {
     const response = await api.post('/api/travel/start', { employeeId, requestId, ...location });
     return response.data;
