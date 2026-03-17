@@ -125,7 +125,7 @@ const Layout = () => {
         <div className="layout">
             <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
                 <div className="logo-area">
-                    <img src={srmLogo} alt="SRM Sweets" />
+                    <img src={srmLogo} alt="SRM Sweets and Cakes" />
                     <h2>HR Portal</h2>
                 </div>
                 <nav>

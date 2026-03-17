@@ -117,7 +117,11 @@ const EmployeeForm = () => {
         emailOtpSent: false,
         mobileOtpSent: false,
         emailOtp: '',
-        mobileOtp: ''
+        mobileOtp: '',
+        sendingEmailOtp: false,
+        verifyingEmailOtp: false,
+        sendingMobileOtp: false,
+        verifyingMobileOtp: false
     });
 
     useEffect(() => {
@@ -322,46 +326,54 @@ const EmployeeForm = () => {
 
     const handleSendEmailOTP = async () => {
         if (!formData.personalEmail) return alert('Enter email');
+        setVerification(p => ({ ...p, sendingEmailOtp: true }));
         try {
             await sendOTP(formData.personalEmail);
-            setVerification(p => ({ ...p, emailOtpSent: true }));
+            setVerification(p => ({ ...p, emailOtpSent: true, sendingEmailOtp: false }));
             alert('OTP Sent to ' + formData.personalEmail);
         } catch (err) {
             console.error('OTP Send Error:', err);
             alert('Failed to send OTP: ' + (err.response?.data?.message || err.message));
+            setVerification(p => ({ ...p, sendingEmailOtp: false }));
         }
     };
 
     const handleVerifyEmailOTP = async () => {
         if (!verification.emailOtp) return alert('Enter OTP');
+        setVerification(p => ({ ...p, verifyingEmailOtp: true }));
         try {
             await verifyOTP(formData.personalEmail, verification.emailOtp);
-            setVerification(p => ({ ...p, emailVerified: true }));
+            setVerification(p => ({ ...p, emailVerified: true, verifyingEmailOtp: false }));
             alert('Email Verified successfully!');
         } catch (e) {
             alert('Invalid OTP. Please check and try again.');
+            setVerification(p => ({ ...p, verifyingEmailOtp: false }));
         }
     };
 
     const handleSendMobileOTP = async () => {
         if (!formData.personalMobile) return alert('Enter mobile');
+        setVerification(p => ({ ...p, sendingMobileOtp: true }));
         try {
             await sendSMSOTP(formData.personalMobile);
-            setVerification(p => ({ ...p, mobileOtpSent: true }));
+            setVerification(p => ({ ...p, mobileOtpSent: true, sendingMobileOtp: false }));
             alert('OTP Sent to mobile');
         } catch (err) {
             alert('Failed to send SMS OTP: ' + (err.response?.data?.message || err.message));
+            setVerification(p => ({ ...p, sendingMobileOtp: false }));
         }
     };
 
     const handleVerifyMobileOTP = async () => {
         if (!verification.mobileOtp) return alert('Enter OTP');
+        setVerification(p => ({ ...p, verifyingMobileOtp: true }));
         try {
             await verifySMSOTP(formData.personalMobile, verification.mobileOtp);
-            setVerification(p => ({ ...p, mobileVerified: true }));
+            setVerification(p => ({ ...p, mobileVerified: true, verifyingMobileOtp: false }));
             alert('Mobile Verified successfully!');
         } catch (e) {
             alert('Invalid OTP. Please check and try again.');
+            setVerification(p => ({ ...p, verifyingMobileOtp: false }));
         }
     };
 
@@ -425,7 +437,26 @@ const EmployeeForm = () => {
                         {id && (
                             <div className="col-span-full flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
                                 <div><h4 className="font-bold text-red-700">Face Registration</h4><p className="text-sm text-red-800">Reset face ID if employee needs to re-register.</p></div>
-                                <button type="button" onClick={async () => { if (confirm('Reset Face ID?')) { try { await deleteFaceRegistration(id); alert('Reset Successfully'); } catch (e) { alert('Failed'); } } }} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Reset Face ID</button>
+                                <button 
+                                    type="button" 
+                                    disabled={loading}
+                                    onClick={async () => { 
+                                        if (confirm('Reset Face ID?')) { 
+                                            setLoading(true);
+                                            try { 
+                                                await deleteFaceRegistration(id); 
+                                                alert('Reset Successfully'); 
+                                            } catch (e) { 
+                                                alert('Failed'); 
+                                            } finally {
+                                                setLoading(false);
+                                            }
+                                        } 
+                                    }} 
+                                    className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all shadow-sm font-medium disabled:bg-red-300"
+                                >
+                                    {loading ? 'Resetting...' : 'Reset Face ID'}
+                                </button>
                             </div>
                         )}
                     </div>
@@ -510,13 +541,33 @@ const EmployeeForm = () => {
                             <div className="flex flex-col gap-2">
                                 <div className="flex gap-2">
                                     <input type="text" className={`input flex-1 ${verification.mobileVerified ? 'bg-green-50' : ''}`} value={formData.personalMobile} onChange={e => handleChange('personalMobile', e.target.value)} disabled={verification.mobileVerified} />
-                                    {!verification.mobileVerified && !verification.mobileOtpSent && <button onClick={handleSendMobileOTP} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Verify</button>}
+                                    {!verification.mobileVerified && !verification.mobileOtpSent && (
+                                        <button 
+                                            onClick={handleSendMobileOTP} 
+                                            disabled={verification.sendingMobileOtp}
+                                            className="px-6 py-2 bg-blue-600 text-white rounded-xl shadow-sm hover:bg-blue-700 transition-all font-medium disabled:bg-blue-300 whitespace-nowrap"
+                                        >
+                                            {verification.sendingMobileOtp ? 'Sending...' : 'Verify'}
+                                        </button>
+                                    )}
                                 </div>
                                 {verification.mobileOtpSent && !verification.mobileVerified && (
-                                    <div className="flex gap-2 items-center">
-                                        <input type="text" className="input w-24" placeholder="OTP" value={verification.mobileOtp} onChange={e => setVerification(p => ({ ...p, mobileOtp: e.target.value }))} />
-                                        <button onClick={handleVerifyMobileOTP} className="px-4 py-2 bg-green-600 text-white rounded-lg">Submit</button>
-                                        <button onClick={handleSendMobileOTP} className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">Resend</button>
+                                    <div className="flex gap-2 items-center mt-1">
+                                        <input type="text" className="input w-32" placeholder="Enter OTP" value={verification.mobileOtp} onChange={e => setVerification(p => ({ ...p, mobileOtp: e.target.value }))} />
+                                        <button 
+                                            onClick={handleVerifyMobileOTP} 
+                                            disabled={verification.verifyingMobileOtp}
+                                            className="px-5 py-2 bg-green-600 text-white rounded-xl shadow-sm hover:bg-green-700 transition-all font-medium disabled:bg-green-300 whitespace-nowrap"
+                                        >
+                                            {verification.verifyingMobileOtp ? '...' : 'Submit'}
+                                        </button>
+                                        <button 
+                                            onClick={handleSendMobileOTP} 
+                                            disabled={verification.sendingMobileOtp}
+                                            className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors text-sm font-semibold disabled:text-gray-400 whitespace-nowrap"
+                                        >
+                                            {verification.sendingMobileOtp ? 'Sending...' : 'Resend'}
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -526,13 +577,33 @@ const EmployeeForm = () => {
                             <div className="flex flex-col gap-2">
                                 <div className="flex gap-2">
                                     <input type="text" className={`input flex-1 ${verification.emailVerified ? 'bg-green-50' : ''}`} value={formData.personalEmail} onChange={e => handleChange('personalEmail', e.target.value)} disabled={verification.emailVerified} />
-                                    {!verification.emailVerified && !verification.emailOtpSent && <button onClick={handleSendEmailOTP} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Verify</button>}
+                                    {!verification.emailVerified && !verification.emailOtpSent && (
+                                        <button 
+                                            onClick={handleSendEmailOTP} 
+                                            disabled={verification.sendingEmailOtp}
+                                            className="px-6 py-2 bg-blue-600 text-white rounded-xl shadow-sm hover:bg-blue-700 transition-all font-medium disabled:bg-blue-300 whitespace-nowrap"
+                                        >
+                                            {verification.sendingEmailOtp ? 'Sending...' : 'Verify'}
+                                        </button>
+                                    )}
                                 </div>
                                 {verification.emailOtpSent && !verification.emailVerified && (
-                                    <div className="flex gap-2 items-center">
-                                        <input type="text" className="input w-24" placeholder="OTP" value={verification.emailOtp} onChange={e => setVerification(p => ({ ...p, emailOtp: e.target.value }))} />
-                                        <button onClick={handleVerifyEmailOTP} className="px-4 py-2 bg-green-600 text-white rounded-lg">Submit</button>
-                                        <button onClick={handleSendEmailOTP} className="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">Resend</button>
+                                    <div className="flex gap-2 items-center mt-1">
+                                        <input type="text" className="input w-32" placeholder="Enter OTP" value={verification.emailOtp} onChange={e => setVerification(p => ({ ...p, emailOtp: e.target.value }))} />
+                                        <button 
+                                            onClick={handleVerifyEmailOTP} 
+                                            disabled={verification.verifyingEmailOtp}
+                                            className="px-5 py-2 bg-green-600 text-white rounded-xl shadow-sm hover:bg-green-700 transition-all font-medium disabled:bg-green-300 whitespace-nowrap"
+                                        >
+                                            {verification.verifyingEmailOtp ? '...' : 'Submit'}
+                                        </button>
+                                        <button 
+                                            onClick={handleSendEmailOTP} 
+                                            disabled={verification.sendingEmailOtp}
+                                            className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors text-sm font-semibold disabled:text-gray-400 whitespace-nowrap"
+                                        >
+                                            {verification.sendingEmailOtp ? 'Sending...' : 'Resend'}
+                                        </button>
                                     </div>
                                 )}
                             </div>
