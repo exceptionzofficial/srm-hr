@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiUsers, FiSearch, FiEdit2, FiTrash2, FiPlus, FiMapPin, FiUser, FiCreditCard } from 'react-icons/fi';
+import { FiUsers, FiSearch, FiEdit2, FiTrash2, FiPlus, FiMapPin, FiUser, FiCreditCard, FiSmartphone, FiMonitor, FiShield } from 'react-icons/fi';
 import { getEmployees, deleteEmployee, getBranches } from '../services/api';
 import './Employees.css';
 
@@ -27,7 +27,7 @@ const Employees = () => {
             const userBranchId = user.branchId;
 
             // Define Admin Roles (can see everything)
-            const allowedAdminRoles = ['HR', 'SUPER_ADMIN', 'ADMIN'];
+            const allowedAdminRoles = ['HR', 'HR_ADMIN', 'SUPER_ADMIN', 'ADMIN'];
 
             let queryBranchId = null;
 
@@ -80,17 +80,17 @@ const Employees = () => {
         })
         .sort((a, b) => a.name.localeCompare(b.name));
 
-    // Split based on employeeType, platformAccess, or ID prefix (SRMC indicates Kiosk)
-    const isKiosk = (emp) => {
-        return (
-            emp.employeeType === 'kiosk' ||
-            emp.platformAccess === 'Kiosk' ||
-            emp.employeeId?.startsWith('SRMC')
-        );
-    };
-
-    const mobileEmployees = filteredEmployees.filter(emp => !isKiosk(emp));
-    const kioskEmployees = filteredEmployees.filter(emp => isKiosk(emp));
+    // Split based on employeeType, platformAccess, or ID prefix
+    const managerEmployees = filteredEmployees.filter(emp => emp.employeeId?.startsWith('MGR'));
+    const kioskEmployees = filteredEmployees.filter(emp => 
+        !emp.employeeId?.startsWith('MGR') && 
+        (emp.employeeId?.startsWith('SRMC') || emp.platformAccess === 'Kiosk')
+    );
+    const mobileEmployees = filteredEmployees.filter(emp => 
+        !emp.employeeId?.startsWith('MGR') && 
+        !emp.employeeId?.startsWith('SRMC') && 
+        emp.platformAccess !== 'Kiosk'
+    );
 
     if (loading) {
         return <div className="loading-container"><div className="spinner"></div></div>;
@@ -124,10 +124,95 @@ const Employees = () => {
             {error && <div className="badge badge-danger justify-center" style={{ width: '100%', padding: '12px', marginBottom: '16px' }}>{error}</div>}
 
 
-            {/* Mobile App Employees Section */}
+            {/* Management Section */}
             <div className="branch-header-premium mt-0 mb-4">
                 <div className="branch-label">
-                    <span>📱 Mobile App Employees</span>
+                    <FiShield className="text-primary" /> Management Profiles
+                </div>
+                <div className="branch-count">
+                    {managerEmployees.length} admin members
+                </div>
+            </div>
+
+            <div className="card p-0 overflow-hidden mb-10">
+                {managerEmployees.length > 0 ? (
+                    <div className="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style={{ width: '120px' }}>ID & Code</th>
+                                    <th>Manager Details</th>
+                                    <th>Work Mode</th>
+                                    <th>Location & Finance</th>
+                                    <th>Status</th>
+                                    <th style={{ textAlign: 'center', width: '100px' }}>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {managerEmployees.map((emp) => (
+                                    <tr
+                                        key={emp.employeeId}
+                                        onClick={() => navigate(`/attendance/view/${emp.employeeId}`)}
+                                        className="employee-card-row"
+                                    >
+                                        <td>
+                                            <div className="font-bold text-slate-800">{emp.employeeId}</div>
+                                            {emp.associateCode && <div className="text-xs text-slate-400 font-medium">{emp.associateCode}</div>}
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                {emp.photoUrl ? (
+                                                    <img src={emp.photoUrl} alt={emp.name} className="employee-photo" />
+                                                ) : (
+                                                    <div className="photo-placeholder"><FiUser size={20} /></div>
+                                                )}
+                                                <div>
+                                                    <div className="font-bold text-slate-900">{emp.name}</div>
+                                                    <div className="text-xs text-slate-500">{emp.designation || 'Management'}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`badge ${emp.workMode === 'OFFICE' ? 'badge-secondary' : 'badge-warning'}`}>
+                                                {emp.workMode?.replace('_', ' ') || 'OFFICE'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="text-slate-600">
+                                                <div className="flex items-center gap-1-5 mb-1 text-sm font-medium">
+                                                    <FiMapPin size={12} className="text-primary" /> {getBranchName(emp.branchId)}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`badge ${emp.status === 'active' ? 'badge-success' : 'badge-danger'}`}>
+                                                {emp.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="action-buttons justify-center" onClick={(e) => e.stopPropagation()}>
+                                                <button className="action-btn edit" onClick={() => navigate(`/employee/edit/${emp.employeeId}`)}>
+                                                    <FiEdit2 />
+                                                </button>
+                                                <button className="action-btn delete" onClick={() => handleDelete(emp.employeeId)}>
+                                                    <FiTrash2 />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <p className="empty-message" style={{ textAlign: 'center', padding: '20px', color: '#777' }}>No management profiles found.</p>
+                )}
+            </div>
+
+            {/* Mobile App Employees Section */}
+            <div className="branch-header-premium mb-4">
+                <div className="branch-label">
+                    <FiSmartphone className="text-primary" /> Mobile App Employees
                 </div>
                 <div className="branch-count">
                     {mobileEmployees.length} active members
@@ -217,7 +302,7 @@ const Employees = () => {
             {/* Kiosk Employees Section */}
             <div className="branch-header-premium mb-4">
                 <div className="branch-label">
-                    <span>🖥️ Kiosk / Common Employees</span>
+                    <FiMonitor className="text-primary" /> Kiosk / Common Employees
                 </div>
                 <div className="branch-count">
                     {kioskEmployees.length} registered profiles

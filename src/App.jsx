@@ -14,6 +14,7 @@ import AttendanceView from './pages/AttendanceView';
 import LiveTracking from './pages/LiveTracking';
 import AdvanceTracking from './pages/AdvanceTracking';
 import WorkTimings from './pages/WorkTimings';
+import Branches from './pages/Branches';
 import './components/Layout.css';
 
 import Login from './pages/Login'; // Keep existing login import if it was there, assumed line 16
@@ -40,6 +41,7 @@ function App() {
           <Route path="advance-tracking" element={<AdvanceTracking />} />
           <Route path="tracking" element={<LiveTracking />} />
           <Route path="work-timings" element={<WorkTimings />} />
+          <Route path="branches" element={<Branches />} />
           <Route path="chat" element={<ChatGroups />} />
           <Route path="attendance-report" element={<AttendanceReport />} />
           <Route path="attendance/mobile" element={<MobileAttendance />} />

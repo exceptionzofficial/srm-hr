@@ -74,6 +74,21 @@ export const getBranchById = async (branchId) => {
     return response.data;
 };
 
+export const createBranch = async (branchData) => {
+    const response = await api.post('/api/branches', branchData);
+    return response.data;
+};
+
+export const updateBranch = async (branchId, updates) => {
+    const response = await api.put(`/api/branches/${branchId}`, updates);
+    return response.data;
+};
+
+export const deleteBranch = async (branchId) => {
+    const response = await api.delete(`/api/branches/${branchId}`);
+    return response.data;
+};
+
 export const getPayGroups = async () => {
     const response = await api.get('/api/pay-groups');
     return response.data;

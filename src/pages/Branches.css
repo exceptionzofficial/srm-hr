@@ -1,0 +1,349 @@
+/**
+ * Branches Page Styles
+ */
+
+/* Map Container */
+.map-container {
+    position: relative;
+    margin-bottom: 24px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.google-map {
+    width: 100%;
+    height: 450px;
+    background: #f1f5f9;
+}
+
+.map-legend {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    gap: 24px;
+    border: 1px solid var(--border);
+    z-index: 10;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-dot.main {
+    background: var(--primary);
+}
+
+.legend-dot.sales {
+    background: #10b981;
+}
+
+.legend-dot.franchise {
+    background: var(--secondary);
+}
+
+.legend-dot.inactive {
+    background: var(--text-secondary);
+}
+
+/* Legend Sections */
+.legend-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legend-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.legend-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.legend-divider {
+    width: 1px;
+    background: var(--border);
+    margin: 4px 0;
+}
+
+.toggle-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.toggle-btn:hover {
+    background: var(--bg-main);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.toggle-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.legend-arrow {
+    font-size: 12px;
+    width: 14px;
+    text-align: center;
+}
+
+.legend-arrow.inside {
+    color: var(--success);
+}
+
+.legend-arrow.outside {
+    color: var(--primary);
+}
+
+.legend-arrow.offline {
+    color: var(--text-secondary);
+}
+
+.legend-info {
+    font-size: 11px;
+    color: var(--success);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* Branches Grid */
+.branches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    margin-top: 16px;
+}
+
+.branch-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.branch-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-4px);
+    border-color: var(--primary-light);
+}
+
+.branch-card.inactive {
+    opacity: 0.8;
+    background: var(--bg-main);
+}
+
+.branch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.branch-icon {
+    width: 44px;
+    height: 44px;
+    background: #fef2f2;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 20px;
+}
+
+.branch-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 6px 0;
+}
+
+.branch-address {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.branch-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: var(--radius);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.branch-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.branch-actions .action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.branch-actions .action-btn.edit {
+    background: #f1f5f9;
+    color: var(--text-main);
+}
+
+.branch-actions .action-btn.edit:hover {
+    background: #e2e8f0;
+}
+
+.branch-actions .action-btn.delete {
+    background: #fef2f2;
+    color: var(--primary);
+}
+
+.branch-actions .action-btn.delete:hover {
+    background: #fee2e2;
+}
+
+/* Modal Specific Adjustments */
+.modal-large {
+    max-width: 800px;
+}
+
+.modal-body-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+}
+
+.map-section {
+    background: var(--bg-main);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+    min-height: 300px;
+}
+
+.map-hint {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid var(--primary-light);
+    z-index: 5;
+    box-shadow: var(--shadow-sm);
+}
+
+.location-btn {
+    margin-top: 8px;
+}
+
+.radius-slider {
+    width: 100%;
+    height: 6px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #e2e8f0;
+    border-radius: 3px;
+    outline: none;
+    margin-top: 12px;
+}
+
+.radius-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: var(--shadow-sm);
+}
+
+.radius-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    font-weight: 500;
+}

@@ -151,6 +151,9 @@ const Layout = () => {
                     <NavLink to="/tracking" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiMapPin /> Live Tracking
                     </NavLink>
+                    <NavLink to="/branches" className={({ isActive }) => isActive ? 'active' : ''}>
+                        <FiMapPin /> Branches
+                    </NavLink>
                     <NavLink to="/work-timings" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiClipboard /> Work Timings
                     </NavLink>
