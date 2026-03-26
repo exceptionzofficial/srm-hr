@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAttendanceReport, getBranchById } from '../services/api';
+import { getAttendanceReport, getBranchById, getBranches } from '../services/api';
 import { FiSmartphone } from 'react-icons/fi';
 import './AttendanceReport.css'; // Reusing the same CSS
 
@@ -16,6 +16,8 @@ const MobileAttendance = () => {
     const [loading, setLoading] = useState(false);
     const [fetched, setFetched] = useState(false);
     const [branchDetails, setBranchDetails] = useState(null);
+    const [branches, setBranches] = useState([]);
+    const [selectedBranchId, setSelectedBranchId] = useState('');
 
     // Auto-set dates when type changes
     useEffect(() => {
@@ -37,8 +39,19 @@ const MobileAttendance = () => {
         }
     }, [reportType]);
 
-    // Auto-load today's report on page load
+    // Load branches and first report
     useEffect(() => {
+        const loadBranches = async () => {
+            try {
+                const res = await getBranches();
+                if (res.success) {
+                    setBranches(res.branches || []);
+                }
+            } catch (e) {
+                console.error("Failed to load branches", e);
+            }
+        };
+        loadBranches();
         handleGenerate();
     }, []);
 
@@ -62,13 +75,16 @@ const MobileAttendance = () => {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             const userRole = user.role || '';
             const userBranchId = user.branchId;
-            const allowedAdminRoles = ['HR', 'SUPER_ADMIN', 'ADMIN'];
+            const allowedAdminRoles = ['HR', 'SUPER_ADMIN', 'ADMIN', 'HR_ADMIN', 'HR MANAGER'];
 
-            let queryBranchId = null;
+            let queryBranchId = selectedBranchId; // Default to selected
 
-            if (!allowedAdminRoles.includes(userRole)) {
-                if (userBranchId) {
-                    queryBranchId = userBranchId;
+            // If no branch selected, check role restrictions
+            if (!queryBranchId) {
+                if (!allowedAdminRoles.includes(userRole.toUpperCase())) {
+                    if (userBranchId) {
+                        queryBranchId = userBranchId;
+                    }
                 }
             }
 
@@ -238,6 +254,21 @@ const MobileAttendance = () => {
                         <option value="weekly">Weekly Summary</option>
                         <option value="monthly">Monthly Summary</option>
                         <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div className="control-group">
+                    <label>Branch:</label>
+                    <select
+                        value={selectedBranchId}
+                        onChange={(e) => setSelectedBranchId(e.target.value)}
+                        className="type-select"
+                        style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ddd' }}
+                    >
+                        <option value="">All Branches</option>
+                        {branches.map(b => (
+                            <option key={b.branchId} value={b.branchId}>{b.name}</option>
+                        ))}
                     </select>
                 </div>
 

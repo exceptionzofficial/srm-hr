@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiUser, FiEdit2, FiSearch, FiCreditCard, FiArrowLeft } from 'react-icons/fi';
-import { getEmployees, createSalary, getSalaries, updateSalary, calculateSalary } from '../services/api';
+import { FiPlus, FiUser, FiEdit2, FiSearch, FiCreditCard, FiArrowLeft, FiFilter } from 'react-icons/fi';
+import { 
+    getEmployees, createSalary, getSalaries, updateSalary, calculateSalary,
+    getBranches, getPayGroups, getDesignations 
+} from '../services/api';
 import './Salary.css';
 
 const Salary = () => {
     const [employees, setEmployees] = useState([]);
+    const [branches, setBranches] = useState([]);
+    const [payGroups, setPayGroups] = useState([]);
+    const [designations, setDesignations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [employeeSalaries, setEmployeeSalaries] = useState([]);
@@ -12,6 +18,9 @@ const Salary = () => {
 
     const [editingSalary, setEditingSalary] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedBranch, setSelectedBranch] = useState('All');
+    const [selectedPaygroup, setSelectedPaygroup] = useState('All');
+    const [roleFilter, setRoleFilter] = useState('All'); // All, Employee, Manager
 
     // Form State
     const [formData, setFormData] = useState({
@@ -43,25 +52,32 @@ const Salary = () => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        loadEmployees();
+        loadData();
     }, []);
 
-    const loadEmployees = async () => {
+    const loadData = async () => {
+        setLoading(true);
         try {
-            const data = await getEmployees();
+            const [empData, branchData, pgData, dsData] = await Promise.all([
+                getEmployees(),
+                getBranches(),
+                getPayGroups(),
+                getDesignations()
+            ]);
 
-            // Filter by Branch
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const branchId = user.branchId;
+            const allEmps = empData.employees || empData || [];
+            setEmployees(allEmps);
+            setBranches(branchData.branches || branchData || []);
+            setPayGroups(pgData.payGroups || pgData || []);
+            setDesignations(dsData.designations || dsData || []);
 
-            let allEmployees = data.employees || [];
-            if (branchId) {
-                allEmployees = allEmployees.filter(e => e.branchId === branchId);
-            }
+            console.log('Loaded Employees:', allEmps.length);
 
-            setEmployees(allEmployees);
+            // Always default to 'All' for maximum visibility, 
+            // the user can filter down if they want.
+            setSelectedBranch('All');
         } catch (error) {
-            console.error('Error loading employees:', error);
+            console.error('Error loading summary data:', error);
         } finally {
             setLoading(false);
         }
@@ -253,10 +269,40 @@ const Salary = () => {
         fetchAutoDeductions(initialForm.month, initialForm.year);
     };
 
-    const filteredEmployees = employees.filter(emp =>
-        emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.employeeId?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const getBranchName = (id) => {
+        const b = branches.find(b => b.branchId === id);
+        return b ? b.name : id || 'N/A';
+    };
+
+    const isManager = (emp) => {
+        const isMgrId = emp.employeeId?.startsWith('MGR');
+        const hasMgrRole = ['BRANCH_MANAGER', 'CLUSTER_MANAGER', 'RETAIL_MANAGER', 'HR_ADMIN', 'FINANCE_ADMIN', 'LEGAL_ADMIN', 'PRODUCTION_ADMIN', 'QUALITY_ADMIN', 'MANAGER'].includes(emp.role);
+        
+        if (isMgrId || hasMgrRole) return true;
+        
+        if (!emp.designation) return false;
+        const d = emp.designation.toLowerCase();
+        return (
+            d.includes('manager') || d.includes('lead') || d.includes('head') || 
+            d.includes('chief') || d.includes('director') || d.includes('admin') ||
+            d.includes('supervisor')
+        );
+    };
+
+    const filteredEmployees = employees.filter(emp => {
+        const matchesSearch = 
+            emp.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            emp.employeeId?.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesBranch = selectedBranch === 'All' || emp.branchId === selectedBranch;
+        const matchesPaygroup = selectedPaygroup === 'All' || emp.payGroup === selectedPaygroup;
+        
+        let matchesRole = true;
+        if (roleFilter === 'Manager') matchesRole = isManager(emp);
+        else if (roleFilter === 'Employee') matchesRole = !isManager(emp);
+
+        return matchesSearch && matchesBranch && matchesPaygroup && matchesRole;
+    });
 
     if (loading) return (
         <div className="loading-container">
@@ -268,59 +314,101 @@ const Salary = () => {
     if (!selectedEmployee) {
         return (
             <div className="salary-page fade-in">
-                <div className="section-header mb-8">
+                <div className="section-header">
                     <div className="section-title">
                         <FiCreditCard />
                         <h2>Salary Management</h2>
                     </div>
-                    <div className="search-container w-80">
-                        <FiSearch className="search-icon" />
-                        <input
-                            type="text"
-                            placeholder="Find employee to process..."
-                            className="search-input"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                </div>
+
+                <div className="filter-bar">
+                    <div className="filter-group">
+                        <label><FiFilter /> Branch</label>
+                        <select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)}>
+                            <option value="All">All Branches</option>
+                            {branches.map(b => <option key={b.branchId} value={b.branchId}>{b.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <label>Pay Group</label>
+                        <select value={selectedPaygroup} onChange={(e) => setSelectedPaygroup(e.target.value)}>
+                            <option value="All">All Paygroups</option>
+                            {payGroups.map(pg => <option key={pg.id || pg.name} value={pg.id || pg.name}>{pg.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <label>Role</label>
+                        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                            <option value="All">All Roles</option>
+                            <option value="Employee">Employees</option>
+                            <option value="Manager">Managers</option>
+                        </select>
+                    </div>
+
+                    <div className="filter-group search-box">
+                        <label>Search</label>
+                        <div className="search-input-wrapper">
+                            <FiSearch className="search-icon" />
+                            <input
+                                type="text"
+                                className="search-input"
+                                placeholder="Search by name or ID..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div className="card bg-transparent border-none shadow-none p-0">
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                        {filteredEmployees.map(emp => (
-                            <div key={emp.employeeId}
-                                className="card p-6 cursor-pointer flex flex-col gap-4 transition-all hover:-translate-y-1"
-                                onClick={() => handleEmployeeSelect(emp)}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-primary/5 rounded-full flex items-center justify-center text-primary">
-                                        <FiUser size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="m-0 text-base font-bold text-slate-900">{emp.name}</h3>
-                                        <p className="m-0 text-xs text-slate-500 font-medium">{emp.designation || 'Staff Member'}</p>
-                                    </div>
-                                </div>
-
-                                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 flex flex-col gap-2">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Employee ID</span>
-                                        <span className="text-[11px] font-bold bg-white px-2 py-0.5 rounded border border-slate-200 max-w-[140px] truncate" title={emp.employeeId}>
-                                            {emp.employeeId}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Location</span>
-                                        <span className="badge badge-secondary text-[11px] font-bold">{emp.branchId || 'N/A'}</span>
-                                    </div>
-                                </div>
-
-                                <button className="btn btn-secondary w-full mt-2">
-                                    Manage Salary
-                                </button>
-                            </div>
-                        ))}
+                <div className="salary-stats-overview">
+                    <div className="stat-mini-pill">
+                        <span className="label">Showing:</span>
+                        <span className="value">{filteredEmployees.length} Employees</span>
                     </div>
+                </div>
+
+                <div className="employee-cards-grid">
+                    {filteredEmployees.map(emp => (
+                        <div key={emp.employeeId}
+                            className="employee-salary-card"
+                            onClick={() => handleEmployeeSelect(emp)}
+                        >
+                            <div className="employee-card-header">
+                                <div className="avatar-ring">
+                                    <FiUser size={20} />
+                                </div>
+                                <div className="employee-info">
+                                    <h3>{emp.name}</h3>
+                                    <p>{emp.designation || 'Staff Member'}</p>
+                                </div>
+                            </div>
+
+                            <div className="employee-card-details">
+                                <div className="detail-row">
+                                    <span className="detail-label">Employee ID</span>
+                                    <span className="detail-value">
+                                        <span className="id-badge">{emp.employeeId}</span>
+                                    </span>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Branch</span>
+                                    <span className="detail-value">
+                                        <span className="branch-badge">{getBranchName(emp.branchId)}</span>
+                                    </span>
+                                </div>
+                                <div className="detail-row">
+                                    <span className="detail-label">Pay Group</span>
+                                    <span className="detail-value">{emp.payGroup || 'N/A'}</span>
+                                </div>
+                            </div>
+
+                            <button className="btn btn-secondary manage-salary-btn">
+                                Manage Salary
+                            </button>
+                        </div>
+                    ))}
                 </div>
             </div>
         );

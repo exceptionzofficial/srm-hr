@@ -11,9 +11,16 @@ import {
     FiSmartphone,
     FiMonitor,
     FiMessageSquare,
-    FiBookOpen
+    FiBookOpen,
+    FiUserPlus,
+    FiList,
+    FiPlusCircle,
+    FiLayers,
+    FiAlertCircle,
+    FiClock,
+    FiBriefcase
 } from 'react-icons/fi';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 
 import './Layout.css';
 import { getUserGroups } from '../services/api';
@@ -23,9 +30,11 @@ import srmLogo from '../assets/srm-logo.png';
 const Layout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [pendingCount, setPendingCount] = useState(0);
+    const [advancePendingCount, setAdvancePendingCount] = useState(0);
     const [notification, setNotification] = useState(null); // { message, type, groupId }
     const lastCheckedTimeRef = useRef(Date.now());
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Get Current User ID from LocalStorage (set during Login)
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -115,11 +124,25 @@ const Layout = () => {
             const data = await getAllRequests('PENDING', branchId);
             if (data && data.requests) {
                 setPendingCount(data.requests.length);
+                const aCount = data.requests.filter(r => ['ADVANCE', 'BRANCH_TRAVEL', 'LEAVE', 'PERMISSION'].includes(r.type)).length;
+                setAdvancePendingCount(aCount);
             }
         } catch (error) {
             console.error('Error fetching pending requests:', error);
         }
     };
+
+    const [masterExpanded, setMasterExpanded] = useState(location.pathname.startsWith('/employee-master'));
+    const [advanceExpanded, setAdvanceExpanded] = useState(location.pathname.startsWith('/advance'));
+
+    useEffect(() => {
+        if (location.pathname.startsWith('/employee-master')) {
+            setMasterExpanded(true);
+        }
+        if (location.pathname.startsWith('/advance')) {
+            setAdvanceExpanded(true);
+        }
+    }, [location.pathname]);
 
     return (
         <div className="layout">
@@ -129,27 +152,90 @@ const Layout = () => {
                     <h2>HR Portal</h2>
                 </div>
                 <nav>
-                    <NavLink to="/" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiUsers /> Employees
-                    </NavLink>
+                    <div className={`nav-group ${masterExpanded ? 'expanded' : ''}`}>
+                        <div 
+                            className={`nav-link-item ${location.pathname.startsWith('/employee-master') ? 'active' : ''}`}
+                            onClick={() => setMasterExpanded(!masterExpanded)}
+                        >
+                            <div className="nav-link-content">
+                                <FiUsers />
+                                <span>Master</span>
+                            </div>
+                            <span className={`expand-icon ${masterExpanded ? 'expanded' : ''}`}>▾</span>
+                        </div>
+                        
+                        {masterExpanded && (
+                            <div className="sub-nav">
+                                <NavLink to="/employee-master/list" className={({ isActive }) => isActive || (location.pathname === '/employee-master') ? 'active sub-item' : 'sub-item'}>
+                                    <FiList /> Employee List
+                                </NavLink>
+                                <NavLink to="/employee-master/add" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiUserPlus /> Add Employee
+                                </NavLink>
+                                <NavLink to="/employee-master/managers" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiBriefcase /> Managers
+                                </NavLink>
+                                <NavLink to="/employee-master/stats" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiBarChart2 /> Statistics
+                                </NavLink>
+                                <NavLink to="/employee-master/designations" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiPlusCircle /> Add Designation
+                                </NavLink>
+                                <NavLink to="/employee-master/pay-groups" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiLayers /> Pay Groups
+                                </NavLink>
+                                <NavLink to="/employee-master/relieved" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiUsers style={{ opacity: 0.7 }} /> Relieved Employees
+                                </NavLink>
+                            </div>
+                        )}
+                    </div>
                     {['HR_ADMIN', 'SUPER_ADMIN', 'FINANCE_ADMIN'].includes(user.role) && (
                         <NavLink to="/salary" className={({ isActive }) => isActive ? 'active' : ''}>
                             <FiDollarSign /> Salary Management
                         </NavLink>
                     )}
-                    <NavLink to="/requests" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <div className="nav-item-content">
-                            <span><FiFileText /> Requests</span>
-                            {pendingCount > 0 && (
-                                <span className="notification-badge">{pendingCount}</span>
-                            )}
+                    <div className={`nav-group ${advanceExpanded ? 'expanded' : ''}`}>
+                        <div 
+                            className={`nav-link-item ${location.pathname.startsWith('/advance') ? 'active' : ''}`}
+                            onClick={() => setAdvanceExpanded(!advanceExpanded)}
+                        >
+                            <div className="nav-link-content">
+                                <FiDollarSign />
+                                <span>Advance</span>
+                                {advancePendingCount > 0 && (
+                                    <span className="sidebar-badge">{advancePendingCount}</span>
+                                )}
+                            </div>
+                            <span className={`expand-icon ${advanceExpanded ? 'expanded' : ''}`}>▾</span>
                         </div>
-                    </NavLink>
-                    <NavLink to="/advance-tracking" className={({ isActive }) => isActive ? 'active' : ''}>
-                        <FiDollarSign /> Advance
-                    </NavLink>
+                        
+                        {advanceExpanded && (
+                            <div className="sub-nav">
+                                <NavLink to="/advance/requests" className={({ isActive }) => isActive || (location.pathname === '/advance') ? 'active sub-item' : 'sub-item'}>
+                                    <div className="flex items-center justify-between w-full">
+                                        <div className="flex items-center gap-2">
+                                            <FiAlertCircle /> Requests
+                                        </div>
+                                        {advancePendingCount > 0 && (
+                                            <span className="sidebar-badge">{advancePendingCount}</span>
+                                        )}
+                                    </div>
+                                </NavLink>
+                                <NavLink to="/advance/reports" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiFileText /> Reports
+                                </NavLink>
+                                <NavLink to="/advance/emi" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiClock /> EMI Tracking
+                                </NavLink>
+                            </div>
+                        )}
+                    </div>
                     <NavLink to="/tracking" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiMapPin /> Live Tracking
+                    </NavLink>
+                    <NavLink to="/documents" className={({ isActive }) => isActive ? 'active' : ''}>
+                        <FiFileText /> Documents
                     </NavLink>
                     <NavLink to="/branches" className={({ isActive }) => isActive ? 'active' : ''}>
                         <FiMapPin /> Branches

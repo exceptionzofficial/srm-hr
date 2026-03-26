@@ -5,13 +5,14 @@ import {
     FiFileText, FiBook, FiUsers, FiUpload, FiCheck, FiChevronRight, FiChevronLeft, FiExternalLink
 } from 'react-icons/fi';
 import {
-    getEmployees, createEmployee, updateEmployee, getBranches, getPayGroups,
+    getEmployees, createEmployee, updateEmployee, getBranches, getPayGroups, getDesignations,
     sendOTP, verifyOTP, sendSMSOTP, verifySMSOTP, deleteFaceRegistration
 } from '../services/api';
 
 const EmployeeForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [designationsList, setDesignationsList] = useState([]);
 
     // Steps Configuration
     const steps = [
@@ -108,7 +109,10 @@ const EmployeeForm = () => {
         aadhar: null,
         pan: null,
         marksheet: null,
-        license: null
+        license: null,
+        bankpassbook: null,
+        degreecertificate: null,
+        payslip: null
     });
 
     const [verification, setVerification] = useState({
@@ -131,13 +135,15 @@ const EmployeeForm = () => {
     const loadInitialData = async () => {
         setLoading(true);
         try {
-            const [branchRes, payGroupRes] = await Promise.all([
+            const [branchRes, payGroupRes, desigRes] = await Promise.all([
                 getBranches().catch(() => ({ branches: [] })),
-                getPayGroups().catch(() => ({ payGroups: [] }))
+                getPayGroups().catch(() => ({ payGroups: [] })),
+                getDesignations().catch(() => ({ designations: [] }))
             ]);
 
             setBranches(branchRes.branches || []);
             setPayGroups(payGroupRes.payGroups || []);
+            setDesignationsList(desigRes.designations || []);
 
             if (id) {
                 const empRes = await getEmployees();
@@ -242,8 +248,12 @@ const EmployeeForm = () => {
             }
 
             const data = new FormData();
+            const filteredFormData = { ...formData };
+            delete filteredFormData.photoUrl;
+            delete filteredFormData.photo;
+
             const payload = {
-                ...formData,
+                ...filteredFormData,
                 role: 'EMPLOYEE',
                 addedBy: id ? undefined : 'HR Team', // HR Portal Logic
                 statutoryDetails: {
@@ -252,7 +262,8 @@ const EmployeeForm = () => {
                     panNumber: formData.panNumber,
                     aadharNumber: formData.aadharNumber,
                     uanNumber: formData.uanNumber,
-                    pfAppStatus: formData.pfAppStatus
+                    pfAppStatus: formData.pfAppStatus,
+                    esicIP: formData.esicIP,
                 },
                 bankDetails: {
                     bankName: formData.bankName,
@@ -305,11 +316,14 @@ const EmployeeForm = () => {
                 }
             });
 
-            if (files.photo) data.append('photo', files.photo);
+            // if (files.photo) data.append('photo', files.photo); // Photo removed
             if (files.aadhar) data.append('doc_aadhar', files.aadhar);
             if (files.pan) data.append('doc_pan', files.pan);
             if (files.marksheet) data.append('doc_marksheet', files.marksheet);
             if (files.license) data.append('doc_license', files.license);
+            if (files.bankpassbook) data.append('doc_bankpassbook', files.bankpassbook);
+            if (files.degreecertificate) data.append('doc_degreecertificate', files.degreecertificate);
+            if (files.payslip) data.append('doc_payslip', files.payslip);
 
             if (id) {
                 await updateEmployee(id, data);
@@ -379,11 +393,11 @@ const EmployeeForm = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-6">
-            <div className="flex items-center gap-4 mb-6">
-                <button onClick={() => navigate('/')} className="p-2 hover:bg-gray-100 rounded-lg">
-                    <FiArrowLeft className="w-5 h-5" />
+            <div className="flex items-center gap-4 mb-8">
+                <button onClick={() => navigate('/')} className="p-3 hover:bg-gray-100 rounded-xl transition-colors border border-gray-100 group">
+                    <FiArrowLeft className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
                 </button>
-                <h1 className="text-2xl font-bold">{id ? 'Edit Employee' : 'Onboard New Employee'}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{id ? 'Edit Employee' : 'Onboard New Employee'}</h1>
             </div>
 
             <div style={{ marginBottom: '48px', marginTop: '32px' }}>
@@ -399,7 +413,7 @@ const EmployeeForm = () => {
                                     <div style={{ width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `2px solid ${isActive || isCompleted ? '#22C55E' : '#E5E7EB'}`, backgroundColor: isActive ? '#16A34A' : isCompleted ? '#22C55E' : '#FFFFFF', color: isActive || isCompleted ? '#FFFFFF' : '#9CA3AF', transition: 'all 0.3s ease', boxShadow: isActive ? '0 0 0 4px rgba(34, 197, 94, 0.2)' : 'none', transform: isActive ? 'scale(1.1)' : 'scale(1)', marginBottom: '8px' }}>
                                         {isCompleted ? <FiCheck size={20} /> : <span style={{ fontSize: '18px', display: 'flex' }}>{s.icon}</span>}
                                     </div>
-                                    <div className="hidden md:block" style={{ fontSize: '11px', fontWeight: isActive ? '600' : '500', color: isActive ? '#16A34A' : '#6B7280', textAlign: 'center', position: 'absolute', top: s.id % 2 === 0 ? '-25px' : '48px', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>{s.title}</div>
+                                    <div className="hidden md:block" style={{ fontSize: '11px', fontWeight: isActive ? '700' : '500', color: isActive ? '#16A34A' : '#6B7280', textAlign: 'center', position: 'absolute', top: s.id % 2 === 0 ? '-25px' : '48px', left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.title}</div>
                                 </div>
                             );
                         })}
@@ -423,7 +437,13 @@ const EmployeeForm = () => {
                         <div className="form-group"><label className="label">Last Name</label><input type="text" className="input" value={formData.lastName} onChange={e => handleChange('lastName', e.target.value)} /></div>
                         <div className="form-group"><label className="label">Gender</label><select className="input" value={formData.gender} onChange={e => handleChange('gender', e.target.value)}><option value="">Select</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
                         <div className="form-group"><label className="label">Father's Name</label><input type="text" className="input" value={formData.fatherName} onChange={e => handleChange('fatherName', e.target.value)} /></div>
-                        <div className="form-group"><label className="label">Designation</label><input type="text" className="input" value={formData.designation} onChange={e => handleChange('designation', e.target.value)} /></div>
+                        <div className="form-group">
+                            <label className="label">Designation</label>
+                            <select className="input" value={formData.designation} onChange={e => handleChange('designation', e.target.value)}>
+                                <option value="">Select Designation</option>
+                                {designationsList.map(d => <option key={d.designationId} value={d.name}>{d.name}</option>)}
+                            </select>
+                        </div>
                         <div className="form-group"><label className="label">Nature of Work</label><select className="input" value={formData.natureOfWork} onChange={e => handleChange('natureOfWork', e.target.value)}><option value="non-travel">Non-Travel (Stationary)</option><option value="travel">Travel (Field Work)</option></select></div>
                         <div className="form-group"><label className="label">Platform Access</label><select className="input" value={formData.platformAccess} onChange={e => handleChange('platformAccess', e.target.value)}><option value="Mobile">Mobile App</option><option value="Kiosk">Kiosk Mode</option></select></div>
 
@@ -625,21 +645,22 @@ const EmployeeForm = () => {
                         <div className="col-span-full"><h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2"><FiUpload className="text-gray-500" /> Documents</h3></div>
 
                         {[
-                            { label: 'Photo', key: 'photo', url: formData.documents?.photoUrl || formData.photoUrl },
                             { label: 'Aadhar Card', key: 'aadhar', url: formData.documents?.aadharUrl },
                             { label: 'PAN Card', key: 'pan', url: formData.documents?.panUrl },
-                            { label: 'Marksheet', key: 'marksheet', url: formData.documents?.marksheetUrl },
-                            { label: 'Driving License', key: 'license', url: formData.documents?.licenseUrl }
+                            { label: 'Driving License', key: 'license', url: formData.documents?.licenseUrl },
+                            { label: 'Bank Passbook', key: 'bankpassbook', url: formData.documents?.bankPassbookUrl },
+                            { label: 'Degree / Payslip', key: 'degreecertificate', url: formData.documents?.degreeCertificateUrl || formData.documents?.payslipUrl }
                         ].map((doc) => (
                             <div className="form-group" key={doc.key}>
                                 <label className="label">{doc.label}</label>
                                 <div className="flex flex-col gap-2">
                                     {doc.url && (
-                                        <a href={doc.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1 mb-1 font-medium bg-blue-50 p-2 rounded w-fit">
-                                            <FiExternalLink /> View {doc.label}
-                                        </a>
+                                        <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                                            <FiCheck /> Uploaded 
+                                            <a href={doc.url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline ml-2 font-bold underline">View {doc.label}</a>
+                                        </div>
                                     )}
-                                    <input type="file" className="input" accept={doc.key === 'photo' ? 'image/*' : undefined} onChange={e => handleFileChange(doc.key, e)} />
+                                    {!id && <input type="file" className="input" onChange={e => handleFileChange(doc.key, e)} />}
                                 </div>
                             </div>
                         ))}

@@ -1,10 +1,11 @@
 
 import axios from 'axios';
 
-// Ensure this points to the backend (development or production)
-// In development, we use relative path to trigger the Vite proxy (bypassing CORS)
-// In production, we point directly to the backend
-const API_BASE_URL = import.meta.env.DEV ? '' : 'https://srm-backend-lake.vercel.app';
+// API Base URL
+// In development, we use an empty string to trigger the Vite proxy (defined in vite.config.js)
+const API_BASE_URL = import.meta.env.MODE === 'production' 
+    ? 'https://srm-backend-lake.vercel.app' 
+    : '';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -33,6 +34,8 @@ export const getEmployeeById = async (id) => {
     const response = await api.get(`/api/employees/${id}`);
     return response.data;
 };
+
+export const getEmployee = getEmployeeById;
 
 export const createEmployee = async (employeeData) => {
     // Use FormData if there's a photo file
@@ -97,6 +100,22 @@ export const getPayGroups = async () => {
 // --- Face ---
 export const deleteFaceRegistration = async (employeeId) => {
     const response = await api.delete(`/api/face/${employeeId}`);
+    return response.data;
+};
+
+// --- Designations ---
+export const getDesignations = async () => {
+    const response = await api.get('/api/designations');
+    return response.data;
+};
+
+export const createDesignation = async (data) => {
+    const response = await api.post('/api/designations', data);
+    return response.data;
+};
+
+export const deleteDesignation = async (id) => {
+    const response = await api.delete(`/api/designations/${id}`);
     return response.data;
 };
 

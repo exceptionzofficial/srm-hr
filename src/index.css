@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -8,13 +12,13 @@
   --secondary: #FF7F27;
 
   /* Modern SaaS Palette */
-  --bg-main: #fcfcfd;
-  --bg-sidebar: #ffffff;
+  --bg-main: #f1f5f9;      /* Slate-100 for better contrast with cards */
+  --bg-sidebar: #f8fafc;   /* Slate-50 */
   --bg-card: #ffffff;
-  --text-main: #1a1a1a;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --border: #e2e8f0;
+  --text-main: #0f172a;    /* Slate-900 - Darker main text */
+  --text-secondary: #334155; /* Slate-700 - Darker secondary text */
+  --text-muted: #64748b;   /* Slate-500 */
+  --border: #e2e8f0;       /* Slate-200 */
 
   /* Semantic */
   --success: #10b981;

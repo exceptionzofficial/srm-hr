@@ -23,9 +23,9 @@ const LiveTracking = () => {
         try {
             // Determine Branch Context based on Role
             const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const userRole = user.role || '';
+            const userRole = (user.role || '').toUpperCase();
             const userBranchId = user.branchId;
-            const allowedAdminRoles = ['HR', 'SUPER_ADMIN', 'ADMIN'];
+            const allowedAdminRoles = ['HR', 'SUPER_ADMIN', 'ADMIN', 'HR_MANAGER', 'BRANCH_MANAGER', 'CLUSTER_MANAGER', 'MANAGER'];
 
             let queryBranchId = null;
             if (!allowedAdminRoles.includes(userRole)) {
@@ -34,11 +34,15 @@ const LiveTracking = () => {
                 }
             }
 
+            console.log(`[Tracking] Role: ${userRole}, QueryBranchId: ${queryBranchId}`);
             const data = await getAllEmployeeLocations(queryBranchId);
-            if (data.success) {
-                // Filter to only show employees who are actively traveling (have an active trip/travel session)
-                const travelingEmployees = data.employees.filter(emp => emp.tripDetails);
+            console.log(`[Tracking] Received ${data.employees?.length || 0} employees from API`);
 
+            if (data.success) {
+                // HR PORTAL REQUIREMENT: Show ONLY employees who are on active travel
+                const travelingEmployees = data.employees.filter(emp => !!emp.tripDetails);
+                console.log(`[Tracking] Found ${travelingEmployees.length} traveling employees`);
+                
                 setEmployees(travelingEmployees);
                 setActiveCount(travelingEmployees.length);
                 setTotalCount(data.employees.length); // Total employees fetched, not just tracking
@@ -210,6 +214,14 @@ const LiveTracking = () => {
         }
     };
 
+    const formatStationaryTime = (mins) => {
+        if (!mins || mins < 0) return null;
+        if (mins < 60) return `${mins}m`;
+        const hrs = Math.floor(mins / 60);
+        const remainingMins = mins % 60;
+        return `${hrs}h ${remainingMins}m`;
+    };
+
     const formatDistance = (meters) => {
         if (!meters && meters !== 0) return '-';
         if (meters < 1000) return `${Math.round(meters)}m`;
@@ -289,6 +301,11 @@ const LiveTracking = () => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <h4 className="list-emp-name">{emp.name}</h4>
                                                 {emp.tripDetails && <span className="travel-badge">TRAVEL</span>}
+                                                {emp.stationaryMinutes >= 10 && (
+                                                    <span className="stationary-badge">
+                                                        STATIONARY {formatStationaryTime(emp.stationaryMinutes)}
+                                                    </span>
+                                                )}
                                             </div>
                                             <p className="list-emp-dept">{emp.department}</p>
                                         </div>
