@@ -18,7 +18,8 @@ import {
     FiLayers,
     FiAlertCircle,
     FiClock,
-    FiBriefcase
+    FiBriefcase,
+    FiGitBranch
 } from 'react-icons/fi';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 
@@ -186,6 +187,9 @@ const Layout = () => {
                                 </NavLink>
                                 <NavLink to="/employee-master/relieved" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
                                     <FiUsers style={{ opacity: 0.7 }} /> Relieved Employees
+                                </NavLink>
+                                <NavLink to="/employee-master/referrals" className={({ isActive }) => isActive ? 'active sub-item' : 'sub-item'}>
+                                    <FiGitBranch style={{ opacity: 0.7 }} /> Referral Tree
                                 </NavLink>
                             </div>
                         )}

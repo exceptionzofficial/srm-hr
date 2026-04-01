@@ -12,6 +12,7 @@ import RelievedEmployees from './pages/RelievedEmployees';
 import Salary from './pages/Salary';
 import Requests from './pages/Requests';
 import ChatGroups from './pages/ChatGroups';
+import Referrals from './pages/Referrals';
 import AttendanceReport from './pages/AttendanceReport';
 import MobileAttendance from './pages/MobileAttendance';
 import KioskAttendance from './pages/KioskAttendance';
@@ -54,6 +55,7 @@ function App() {
             <Route path="pay-groups" element={<PayGroups />} />
             <Route path="managers" element={<Managers />} />
             <Route path="relieved" element={<RelievedEmployees />} />
+            <Route path="referrals" element={<Referrals />} />
             <Route path="managers/add" element={<ManagerForm />} />
             <Route path="managers/edit/:id" element={<ManagerForm />} />
           </Route>
